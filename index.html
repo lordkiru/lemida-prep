@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#070D1F" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Practice for your SS2 and SS3 exams on your phone." />
+    <title>Lemida Exam Prep</title>
+
+    <!-- Plus Jakarta Sans from Google Fonts. The service worker does not store fonts: offline, the page falls back to the system font. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Theme, applied before the first paint so there is no flash of the wrong theme. Same key and logic as src/theme.js
+         (Light, Dark or System; System, the default, follows the device setting). Storage can be blocked, hence the try/catch. -->
+    <script>
+      (function () {
+        var theme = 'system';
+        try {
+          var stored = localStorage.getItem('prep-theme');
+          if (stored === 'light' || stored === 'dark' || stored === 'system') theme = stored;
+        } catch (e) { /* storage blocked: follow the device */ }
+        var dark = theme === 'dark' || (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var root = document.documentElement;
+        if (dark) root.classList.add('dark');
+        root.style.colorScheme = dark ? 'dark' : 'light';
+      })();
+    </script>
+    <style>
+      html { background: #EEF3FB; }
+      html.dark { background: #070D1F; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

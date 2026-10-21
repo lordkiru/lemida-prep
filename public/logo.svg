@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Lemida Exam Prep">
+  <!-- PLACEHOLDER logo: a simple "A+" medal. Replace this file with the final green 3D "A+" medal, then run `npm run icons`
+       to rebuild the app icons from it. Keep the artwork inside the 128 x 128 box, centred, with room around the edge. -->
+  <defs>
+    <linearGradient id="medal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5EEAD4" />
+      <stop offset="1" stop-color="#0F9D8A" />
+    </linearGradient>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14B8A6" />
+      <stop offset="1" stop-color="#0B6F63" />
+    </linearGradient>
+  </defs>
+  <!-- ribbon tails -->
+  <path d="M40 92 L30 124 L48 114 L58 126 L62 98 Z" fill="url(#ribbon)" />
+  <path d="M88 92 L98 124 L80 114 L70 126 L66 98 Z" fill="url(#ribbon)" />
+  <!-- medal -->
+  <circle cx="64" cy="58" r="50" fill="url(#medal)" />
+  <circle cx="64" cy="58" r="42" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2.5" />
+  <!-- A -->
+  <path fill="#07342E" fill-rule="evenodd" d="M24 82 L47 30 L57 30 L80 82 L69 82 L64 70 L40 70 L35 82 Z M44 61 L60 61 L52 41 Z" />
+  <!-- + -->
+  <path fill="#07342E" d="M84 40 h7 v10 h10 v7 h-10 v10 h-7 v-10 h-10 v-7 h10 z" />
+</svg>

@@ -1,0 +1,127 @@
+/* Lemida Exam Prep design tokens: the ONE place colours, font and the glass-card style are defined.
+   Everything else uses these through the Tailwind names in index.css (bg-bg, text-fg, text-muted, text-accent, bg-button...)
+   or the classes below (.glass, .btn-primary, .chip-amber).
+
+   Light is the default; the `dark` class on <html> switches to the dark set. index.html sets that class before the first
+   paint from the stored choice or the device setting (see src/theme.js). */
+
+:root {
+  --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Light */
+  --bg: #EEF3FB;
+  --fg: #0B1530;
+  --muted: #46526F;          /* secondary text: 6.6:1 on the background */
+  --accent: #0F766E;         /* teal: links, active tab, highlights (5:1 on the background) */
+  --button: #14B8A6;
+  --button-hover: #0FA594;
+  --button-fg: #04201C;      /* dark text on the teal button: white text would only reach 2.5:1 */
+  --focus: #0F766E;
+  --amber: #FBBF24;          /* highlights; text on amber is always --amber-fg */
+  --amber-fg: #241900;
+
+  /* Glass card: on a light page a white film needs a darker edge to be seen */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(11, 21, 48, 0.12);
+  --glass-shadow: 0 8px 32px rgba(11, 21, 48, 0.08);
+
+  --glow-a: rgba(20, 184, 166, 0.18);
+  --glow-b: rgba(251, 191, 36, 0.14);
+
+  color-scheme: light;
+}
+
+:root.dark {
+  --bg: #070D1F;
+  --fg: #F1F5FF;
+  --muted: #A8B5D4;
+  --accent: #5EEAD4;         /* mint */
+  --button: #5EEAD4;
+  --button-hover: #99F6E4;
+  --button-fg: #04201C;
+  --focus: #5EEAD4;
+
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+
+  --glow-a: rgba(94, 234, 212, 0.12);
+  --glow-b: rgba(251, 191, 36, 0.08);
+
+  color-scheme: dark;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  /* two soft glows give the glass cards something to blur */
+  background-image:
+    radial-gradient(60rem 40rem at 8% -10%, var(--glow-a), transparent 70%),
+    radial-gradient(50rem 32rem at 100% 0%, var(--glow-b), transparent 70%);
+  background-attachment: fixed;
+  color: var(--fg);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* A clearly visible focus ring for keyboard users everywhere */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ── Glass card ── */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--glass-shadow);
+  border-radius: 1.25rem;
+}
+
+/* ── Buttons and highlights ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;            /* a comfortable thumb target */
+  padding: 0.5rem 1.1rem;
+  border-radius: 0.85rem;
+  border: 0;
+  background: var(--button);
+  color: var(--button-fg);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.chip-amber {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: var(--amber);
+  color: var(--amber-fg);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Keep people who ask for less motion from getting it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* Dark mode: the `dark` class on <html>, the same approach as SchoolManager and Content Studio */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* The tokens in tokens.css as Tailwind names: bg-bg, text-fg, text-muted, text-accent, bg-button, text-button-fg, bg-amber... */
+@theme inline {
+  --font-sans: var(--font-body);
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-button: var(--button);
+  --color-button-fg: var(--button-fg);
+  --color-amber: var(--amber);
+  --color-amber-fg: var(--amber-fg);
+}

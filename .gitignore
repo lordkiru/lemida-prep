@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+dev-dist
+*.local
+.env
+.env.*
+!.env.example
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.log
+# Question files are never part of this repo: Exam Prep reads questions from the API only.
+question-data/
+*.questions.json
