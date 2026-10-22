@@ -17,6 +17,10 @@ export default function PracticeSession() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const nextRef = useRef(null)
+  // Set to true inside the setResults updater once every question in the round has been answered.
+  // Reading it in next() avoids a stale-closure race where the closed-over `results` still has N-1
+  // entries at the moment next() runs (the last state update hasn't propagated into the closure yet).
+  const shouldEndRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -60,7 +64,13 @@ export default function PracticeSession() {
       setError('')
       try {
         const r = await api.practice.answer(sessionId, { questionId: current.id, chosenIndex })
-        setResults((all) => ({ ...all, [current.id]: r }))
+        setResults((all) => {
+          const next = { ...all, [current.id]: r }
+          // Compute this NOW, inside the updater, where `next` is guaranteed to be the full latest map.
+          // We store the flag in a ref so next() can read it without a stale closure.
+          shouldEndRef.current = firstUnanswered(questions, Object.values(next)) === -1
+          return next
+        })
         setShowing(current.id)
       } catch (err) {
         if (err.code === 'QUESTION_UNAVAILABLE') {
@@ -81,7 +91,7 @@ export default function PracticeSession() {
   async function next() {
     setNotice('')
     setShowing(null)
-    if (firstUnanswered(questions, Object.values(results)) === -1) await end()
+    if (shouldEndRef.current) await end()
   }
 
   async function end() {
