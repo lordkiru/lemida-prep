@@ -256,6 +256,81 @@ a.btn-primary {
   color: var(--accent);
 }
 
+/* ── Practice ── */
+.meter {
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.3s;
+}
+
+/* An answer to tap: big, with its letter, and (once answered) a word as well as a colour for right and wrong */
+.answer {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.9rem;
+  border: 1.5px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.answer:hover:not(:disabled) {
+  background: var(--choice-on);
+  border-color: var(--accent);
+}
+.answer:disabled {
+  cursor: default;
+}
+.answer-letter {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.answer-tag {
+  flex: none;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+}
+.answer.is-right {
+  border-color: var(--accent);
+  background: var(--success-bg);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.answer.is-right .answer-tag {
+  color: var(--accent);
+}
+.answer.is-wrong {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  box-shadow: inset 0 0 0 1px var(--danger);
+}
+.answer.is-wrong .answer-tag {
+  color: var(--danger);
+}
+
 /* Keep people who ask for less motion from getting it */
 @media (prefers-reduced-motion: reduce) {
   * {

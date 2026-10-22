@@ -3,9 +3,9 @@
 A phone-first practice app for SS2 and SS3 students preparing for WAEC and NECO. It is installable (a PWA) and works well
 on a PC too. This repository is the **front end**; the API is `lemida-server` (the `/api/prep` routes).
 
-> **Status: foundation + accounts.** The shell, the design tokens, the theme switch, the PWA setup, the API connection and now
-> **sign-up, sign-in, email confirmation, password reset and the first-time setup** are here. Home and Profile are real;
-> Practice, Mocks and Mistakes still say "Coming soon". There is no payment and no practice yet.
+> **Status: foundation + accounts + practice.** The shell, the design tokens, the theme switch, the PWA setup, the API connection and now
+> **sign-up, sign-in, email confirmation, password reset and the first-time setup** are here. Home, Practice and Profile are real;
+> Mocks and Mistakes still say "Coming soon". There is no payment yet.
 
 ## What is in it
 
@@ -69,6 +69,21 @@ How it behaves:
 
 To try it locally you need `lemida-server` running with `PREP_JWT_SECRET` set (different from `JWT_SECRET`). Without an `EMAIL_USER`/`EMAIL_PASS`
 the server prints each email, link included, to its own log when `NODE_ENV` is not `production`: copy the link from there.
+
+## Practice
+
+`/practice` lists the student's own subjects (from their setup) with how many questions are ready and how many they have seen. A round is up to
+10 questions at `/practice/session/:id`: tap an answer (or press A to D), see at once whether it was right and why, then Next. The end of the round
+(`.../summary`) shows the score and every missed question with the right answer and the explanation.
+
+- **The answer key never reaches the browser early.** A question arrives without its answer or explanation; the server checks each choice and
+  returns the right answer and explanation only after that question is answered (`src/api.js` `practice.answer`). The first answer to a question stands.
+- A half-finished round can be carried on after a refresh or on another visit (`Continue`), or thrown away (`Start a new round`).
+- New questions come first, then the ones the student missed, then the ones answered right longest ago. When every question in a subject has been
+  seen, the card says so and the round is revision.
+- A subject with no approved questions shows "Coming soon" and cannot be started.
+- Keyboard: A to D or 1 to 4 choose an answer; focus moves to "Next question" after answering. Right and wrong are shown in words ("Correct answer",
+  "Your answer") as well as colour.
 
 ## Design tokens and themes
 

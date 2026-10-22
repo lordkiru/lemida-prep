@@ -133,3 +133,29 @@ test('a request answered 401 SESSION_ENDED tells the listeners (and a plain 401 
   await assert.rejects(plain.me.get())
   assert.equal(heard.length, 1, 'being signed out is not the same as being replaced')
 })
+
+// ── practice ──
+test('practice calls: the right paths and methods, the session id is escaped, and only the named fields are sent', async () => {
+  const f = fakeFetch(json(200, {}))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.practice.subjects()
+  await api.practice.start({ subject: 'Biology' })
+  await api.practice.start({ subject: 'Biology', restart: true })
+  await api.practice.get('abc123')
+  await api.practice.answer('abc123', { questionId: 'q1', chosenIndex: 2, correctIndex: 1 })
+  await api.practice.finish('abc123')
+  await api.practice.summary('abc/../x')
+  const calls = f.calls.map((c) => `${c.options.method || 'GET'} ${c.url.replace('https://api.example.com/api/prep', '')}`)
+  assert.deepEqual(calls, [
+    'GET /practice/subjects',
+    'POST /practice/sessions',
+    'POST /practice/sessions',
+    'GET /practice/sessions/abc123',
+    'POST /practice/sessions/abc123/answer',
+    'POST /practice/sessions/abc123/finish',
+    'GET /practice/sessions/abc%2F..%2Fx/summary',
+  ])
+  assert.deepEqual(JSON.parse(f.calls[1].options.body), { subject: 'Biology' })
+  assert.deepEqual(JSON.parse(f.calls[2].options.body), { subject: 'Biology', restart: true })
+  assert.deepEqual(JSON.parse(f.calls[4].options.body), { questionId: 'q1', chosenIndex: 2 })
+})

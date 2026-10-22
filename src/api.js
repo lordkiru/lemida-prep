@@ -82,7 +82,18 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     setupOptions: () => request('/api/prep/setup-options'),
   }
 
-  return { baseUrl: base, request, health, auth, me, onSessionEnded }
+  // Practice. A question arrives WITHOUT its answer; the answer and explanation come back only after answering it (the server checks the answer).
+  const enc = encodeURIComponent
+  const practice = {
+    subjects: () => request('/api/prep/practice/subjects'),
+    start: ({ subject, restart }) => send('POST', '/api/prep/practice/sessions', restart ? { subject, restart: true } : { subject }),
+    get: (sessionId) => request(`/api/prep/practice/sessions/${enc(sessionId)}`),
+    answer: (sessionId, { questionId, chosenIndex }) => send('POST', `/api/prep/practice/sessions/${enc(sessionId)}/answer`, { questionId, chosenIndex }),
+    finish: (sessionId) => send('POST', `/api/prep/practice/sessions/${enc(sessionId)}/finish`, {}),
+    summary: (sessionId) => request(`/api/prep/practice/sessions/${enc(sessionId)}/summary`),
+  }
+
+  return { baseUrl: base, request, health, auth, me, practice, onSessionEnded }
 }
 
 export const api = createApi({ baseUrl: import.meta.env?.VITE_API_URL })

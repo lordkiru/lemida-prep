@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
 import { examLabel } from '../auth/rules'
 
@@ -13,7 +14,10 @@ export default function Home() {
       <p className="mb-4 text-muted">
         You are preparing for {examLabel(user.exam)} {user.examYear} in {user.classLevel}, with {user.subjects.length} subject{user.subjects.length === 1 ? '' : 's'}.
       </p>
-      <p className="mb-4">Practice, mocks and your mistakes list are on their way.</p>
+      <Link to="/practice" className="btn-primary mb-5">
+        Start practising
+      </Link>
+      <p className="mb-2 text-sm text-muted">Mocks and your mistakes list are on their way.</p>
       <span className="chip-amber">Coming soon</span>
     </section>
   )

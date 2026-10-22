@@ -6,6 +6,9 @@ import AuthLayout from './components/AuthLayout'
 import ComingSoon from './pages/ComingSoon'
 import Debug from './pages/Debug'
 import Home from './pages/Home'
+import Practice from './pages/Practice'
+import PracticeSession from './pages/PracticeSession'
+import PracticeSummary from './pages/PracticeSummary'
 import Profile from './pages/Profile'
 import Setup from './pages/Setup'
 import Forgot from './pages/auth/Forgot'
@@ -43,7 +46,9 @@ export default function App() {
         <Route element={<RequireAuth />}>
           <Route element={<AppShell />}>
             <Route index element={<Home />} />
-            <Route path="practice" element={<ComingSoon title="Practice" />} />
+            <Route path="practice" element={<Practice />} />
+            <Route path="practice/session/:sessionId" element={<PracticeSession />} />
+            <Route path="practice/session/:sessionId/summary" element={<PracticeSummary />} />
             <Route path="mocks" element={<ComingSoon title="Mocks" />} />
             <Route path="mistakes" element={<ComingSoon title="Mistakes" />} />
             <Route path="profile" element={<Profile />} />
