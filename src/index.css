@@ -15,4 +15,5 @@
   --color-button-fg: var(--button-fg);
   --color-amber: var(--amber);
   --color-amber-fg: var(--amber-fg);
+  --color-danger: var(--danger);
 }

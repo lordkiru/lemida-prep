@@ -3,10 +3,14 @@
 //
 // Questions and answers must never be stored on the device by accident, so every request asks the browser for `no-store`
 // and the service worker has no rule that touches API calls (see pwa.config.js). The API answers with Cache-Control: no-store too.
+//
+// Signing in is a cookie the server sets (httpOnly, so no script here can read it). `credentials: 'include'` is what makes the
+// browser send it to the API, which lives on another subdomain.
 export class ApiError extends Error {
-  constructor(message, status = 0) {
+  constructor(message, status = 0, code = '') {
     super(message)
     this.status = status
+    this.code = code
   }
 }
 
@@ -25,6 +29,7 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
       res = await doFetch(`${base}${path}`, {
         ...options,
         cache: 'no-store',
+        credentials: 'include',
         headers: { Accept: 'application/json', ...options.headers },
       })
     } catch {
@@ -37,9 +42,13 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     } catch {
       // an empty or non-JSON body
     }
-    if (!res.ok) throw new ApiError((data && data.error) || `Something went wrong (${res.status})`, res.status)
+    if (!res.ok) throw new ApiError((data && data.error) || `Something went wrong (${res.status})`, res.status, (data && data.code) || '')
     return data
   }
+
+  // a request with a JSON body
+  const send = (method, path, body) =>
+    request(path, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body ?? {}) })
 
   // GET /api/prep/health: resolves true when the Prep API says { ok: true }
   const health = async () => {
@@ -47,7 +56,24 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     return Boolean(data && data.ok === true)
   }
 
-  return { baseUrl: base, request, health }
+  // Sign-up, sign-in and the student's own account. Each returns the server's answer; failures throw an ApiError whose
+  // `message` is plain English and whose `code` (BAD_CREDENTIALS, EMAIL_NOT_VERIFIED, WEAK_PASSWORD, BAD_TOKEN...) is for the code.
+  const auth = {
+    signup: ({ name, email, password }) => send('POST', '/api/prep/auth/signup', { name, email, password }),
+    verifyEmail: (token) => send('POST', '/api/prep/auth/verify-email', { token }),
+    resendVerification: (email) => send('POST', '/api/prep/auth/resend-verification', { email }),
+    login: ({ email, password }) => send('POST', '/api/prep/auth/login', { email, password }),
+    logout: () => send('POST', '/api/prep/auth/logout', {}),
+    forgotPassword: (email) => send('POST', '/api/prep/auth/forgot-password', { email }),
+    resetPassword: ({ token, password }) => send('POST', '/api/prep/auth/reset-password', { token, password }),
+  }
+  const me = {
+    get: () => request('/api/prep/me'),
+    saveProfile: ({ exam, classLevel, examYear, subjects }) => send('PUT', '/api/prep/me/profile', { exam, classLevel, examYear, subjects }),
+    setupOptions: () => request('/api/prep/setup-options'),
+  }
+
+  return { baseUrl: base, request, health, auth, me }
 }
 
 export const api = createApi({ baseUrl: import.meta.env?.VITE_API_URL })

@@ -1,21 +1,56 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import AuthProvider from './auth/AuthProvider'
+import { GuestOnly, RequireAuth } from './auth/guards'
 import AppShell from './components/AppShell'
+import AuthLayout from './components/AuthLayout'
 import ComingSoon from './pages/ComingSoon'
 import Debug from './pages/Debug'
+import Home from './pages/Home'
+import Profile from './pages/Profile'
+import Setup from './pages/Setup'
+import Forgot from './pages/auth/Forgot'
+import Login from './pages/auth/Login'
+import Reset from './pages/auth/Reset'
+import Signup from './pages/auth/Signup'
+import Verify from './pages/auth/Verify'
 
+//   /login /signup /forgot   only for people who are signed out
+//   /verify /reset           the pages the emailed links open (anyone, signed in or not)
+//   /setup                   first-time setup, also reachable later from Profile (signed in)
+//   everything else          the app, for signed-in students who finished the setup
 export default function App() {
   return (
-    <Routes>
-      <Route element={<AppShell />}>
-        <Route index element={<ComingSoon title="Home" />} />
-        <Route path="practice" element={<ComingSoon title="Practice" />} />
-        <Route path="mocks" element={<ComingSoon title="Mocks" />} />
-        <Route path="mistakes" element={<ComingSoon title="Mistakes" />} />
-        <Route path="profile" element={<ComingSoon title="Profile" />} />
-        {/* hidden: not in the menu */}
-        <Route path="debug" element={<Debug />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route element={<AuthLayout />}>
+          <Route element={<GuestOnly />}>
+            <Route path="login" element={<Login />} />
+            <Route path="signup" element={<Signup />} />
+            <Route path="forgot" element={<Forgot />} />
+          </Route>
+          <Route path="verify" element={<Verify />} />
+          <Route path="reset" element={<Reset />} />
+          {/* hidden: not in the menu */}
+          <Route path="debug" element={<Debug />} />
+        </Route>
+
+        <Route element={<RequireAuth needSetup={false} />}>
+          <Route element={<AuthLayout wide />}>
+            <Route path="setup" element={<Setup />} />
+          </Route>
+        </Route>
+
+        <Route element={<RequireAuth />}>
+          <Route element={<AppShell />}>
+            <Route index element={<Home />} />
+            <Route path="practice" element={<ComingSoon title="Practice" />} />
+            <Route path="mocks" element={<ComingSoon title="Mocks" />} />
+            <Route path="mistakes" element={<ComingSoon title="Mistakes" />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Route>
+      </Routes>
+    </AuthProvider>
   )
 }

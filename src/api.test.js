@@ -64,3 +64,52 @@ test('an error answer carries the server\'s message and status; a non-JSON error
   const api2 = createApi({ baseUrl: 'http://x', fetchImpl: fakeFetch(bad).impl })
   await assert.rejects(() => api2.health(), (err) => err.status === 502 && /502/.test(err.message))
 })
+
+// ── sign-in: cookie session, JSON bodies, error codes ──
+test('every request sends the sign-in cookie to the API (credentials: include)', async () => {
+  const f = fakeFetch(json(200, { ok: true }))
+  await createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl }).request('/api/prep/me')
+  assert.equal(f.calls[0].options.credentials, 'include')
+})
+
+test('auth calls are POSTs with a JSON body and the right path; only the named fields are sent', async () => {
+  const f = fakeFetch(json(202, { message: 'ok' }))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.auth.signup({ name: 'Ada', email: 'a@b.co', password: 'pw', extra: 'ignored' })
+  await api.auth.login({ email: 'a@b.co', password: 'pw' })
+  await api.auth.verifyEmail('tok')
+  await api.auth.resendVerification('a@b.co')
+  await api.auth.forgotPassword('a@b.co')
+  await api.auth.resetPassword({ token: 't', password: 'p' })
+  await api.auth.logout()
+  assert.deepEqual(
+    f.calls.map((c) => c.url.replace('https://api.example.com/api/prep', '')),
+    ['/auth/signup', '/auth/login', '/auth/verify-email', '/auth/resend-verification', '/auth/forgot-password', '/auth/reset-password', '/auth/logout'],
+  )
+  for (const c of f.calls) {
+    assert.equal(c.options.method, 'POST')
+    assert.equal(c.options.headers['Content-Type'], 'application/json')
+  }
+  assert.deepEqual(JSON.parse(f.calls[0].options.body), { name: 'Ada', email: 'a@b.co', password: 'pw' })
+  assert.deepEqual(JSON.parse(f.calls[2].options.body), { token: 'tok' })
+})
+
+test('the profile is saved with PUT, only the four setup fields, and the options come from GET', async () => {
+  const f = fakeFetch(json(200, {}))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.me.saveProfile({ exam: 'WAEC', classLevel: 'SS3', examYear: 2027, subjects: ['Biology'], plan: 'premium' })
+  await api.me.setupOptions()
+  await api.me.get()
+  assert.equal(f.calls[0].options.method, 'PUT')
+  assert.deepEqual(JSON.parse(f.calls[0].options.body), { exam: 'WAEC', classLevel: 'SS3', examYear: 2027, subjects: ['Biology'] })
+  assert.equal(f.calls[1].url, 'https://api.example.com/api/prep/setup-options')
+  assert.equal(f.calls[2].url, 'https://api.example.com/api/prep/me')
+})
+
+test('a refused request throws an ApiError with the plain-English message, status and code from the server', async () => {
+  const f = fakeFetch(json(403, { error: 'Confirm your email first.', code: 'EMAIL_NOT_VERIFIED' }))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await assert.rejects(api.auth.login({ email: 'a@b.co', password: 'pw' }), (err) => err instanceof ApiError && err.message === 'Confirm your email first.' && err.status === 403 && err.code === 'EMAIL_NOT_VERIFIED')
+  const g = fakeFetch(json(500, null))
+  await assert.rejects(createApi({ baseUrl: 'https://x.test', fetchImpl: g.impl }).me.get(), (err) => err.status === 500 && err.code === '' && /500/.test(err.message))
+})

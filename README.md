@@ -3,8 +3,9 @@
 A phone-first practice app for SS2 and SS3 students preparing for WAEC and NECO. It is installable (a PWA) and works well
 on a PC too. This repository is the **front end**; the API is `lemida-server` (the `/api/prep` routes).
 
-> **Status: foundation only.** The shell, the design tokens, the theme switch, the PWA setup and the API connection are here.
-> The five pages (Home, Practice, Mocks, Mistakes, Profile) say "Coming soon". There is no sign-in, no payment and no practice yet.
+> **Status: foundation + accounts.** The shell, the design tokens, the theme switch, the PWA setup, the API connection and now
+> **sign-up, sign-in, email confirmation, password reset and the first-time setup** are here. Home and Profile are real;
+> Practice, Mocks and Mistakes still say "Coming soon". There is no payment and no practice yet.
 
 ## What is in it
 
@@ -15,6 +16,7 @@ on a PC too. This repository is the **front end**; the API is `lemida-server` (t
 - **Design tokens** in one file, `src/tokens.css`: colours for both themes, the Plus Jakarta Sans font and the glass-card style.
 - **PWA**: web app manifest and a service worker that caches the **app shell only** (see below).
 - **API client** (`src/api.js`) that reads the API address from `VITE_API_URL`.
+- **Accounts** (see "Accounts and sign-in" below): sign up, confirm your email, sign in, forgot password, first-time setup, sign out.
 - **Hidden debug page** at `/debug` (not in the menu) that calls `GET /api/prep/health` and shows **Connected** when the API answers.
 
 ## Run it locally
@@ -34,8 +36,37 @@ Start `lemida-server` too (`npm start` in its `server/` folder). It allows `http
 | `npm run build` | Production build in `dist/`, including the service worker. |
 | `npm run preview` | Serves the production build locally (the service worker only runs in a build). |
 | `npm run lint` | ESLint. |
-| `npm test` | Unit tests (theme, API client, PWA settings and repo rules). |
+| `npm test` | Unit tests (theme, API client, sign-in rules, PWA settings and repo rules). |
 | `npm run icons` | Rebuilds the app icons in `public/icons/` from `public/logo.svg`. |
+
+## Accounts and sign-in
+
+| Page | What it does |
+| --- | --- |
+| `/signup` | name, email, password; then "Check your email" with a Resend button (60 s wait between sends) |
+| `/verify?token=` | the link in the confirmation email: confirms the email **and signs the student in** |
+| `/login` | sign in; if the email is not confirmed yet it offers to resend the link |
+| `/forgot`, `/reset?token=` | forgotten password: emailed link (60 minutes), choose a new password; signs the account out everywhere |
+| `/setup` | first-time setup: exam (WAEC / NECO / both), class (SS2 / SS3), exam year, subjects. Also "Change my setup" on Profile |
+| `/profile` | the details, and Sign out |
+
+How it behaves:
+
+- **The session is a cookie that only the server can read** (`prep_session`, httpOnly, Secure, SameSite=Lax, 30 days). Nothing about the
+  sign-in is kept in localStorage or sessionStorage; `src/api.js` sends `credentials: 'include'` so the browser attaches the cookie.
+  On load, `AuthProvider` asks `GET /api/prep/me` who is signed in.
+- **Guards** (`src/auth/guards.jsx`): signed-out visitors are sent to `/login` (and back to the page they wanted afterwards, only ever a page
+  inside this app); a signed-in student who has not done the setup is sent to `/setup`; `/login`, `/signup` and `/forgot` send a signed-in student on.
+- **Emailed links** carry a one-time token. The page reads it once and removes it from the address bar, and `index.html` sets
+  `<meta name="referrer" content="no-referrer">`, so the token is not left in history or passed to other sites.
+- **No account discovery**: sign-up, resend and forgot-password say the same thing whether or not the email has an account, and a wrong email
+  and a wrong password give the same "Incorrect email or password."
+- The checks in the forms (`src/auth/rules.js`) are only for quick feedback; the server repeats and enforces every rule.
+- Forms use real labels, `autocomplete` values (so password managers work), 16px text (no zoom on iPhones), errors tied to their fields
+  with `aria-describedby`, and choices that show a tick as well as a colour.
+
+To try it locally you need `lemida-server` running with `PREP_JWT_SECRET` set (different from `JWT_SECRET`). Without an `EMAIL_USER`/`EMAIL_PASS`
+the server prints each email, link included, to its own log when `NODE_ENV` is not `production`: copy the link from there.
 
 ## Design tokens and themes
 
