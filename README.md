@@ -57,6 +57,8 @@ How it behaves:
   On load, `AuthProvider` asks `GET /api/prep/me` who is signed in.
 - **Guards** (`src/auth/guards.jsx`): signed-out visitors are sent to `/login` (and back to the page they wanted afterwards, only ever a page
   inside this app); a signed-in student who has not done the setup is sent to `/setup`; `/login`, `/signup` and `/forgot` send a signed-in student on.
+- **One sign-in per account**: signing in on a new device ends the session on every other device. The older device finds out on its next request
+  (or when the student comes back to the app) and shows the sign-in page with the reason; `api.onSessionEnded` carries that news from any request.
 - **Emailed links** carry a one-time token. The page reads it once and removes it from the address bar, and `index.html` sets
   `<meta name="referrer" content="no-referrer">`, so the token is not left in history or passed to other sites.
 - **No account discovery**: sign-up, resend and forgot-password say the same thing whether or not the email has an account, and a wrong email

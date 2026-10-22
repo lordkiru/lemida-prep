@@ -21,6 +21,14 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
   const base = normaliseBaseUrl(baseUrl)
   const doFetch = fetchImpl || ((...args) => fetch(...args))
 
+  // An account has ONE active sign-in: signing in on another device (or changing the password) ends this one, and the server then
+  // answers 401 with the code SESSION_ENDED. Whoever is listening (AuthProvider) hears about it from any request, not only the first.
+  const endedListeners = new Set()
+  const onSessionEnded = (fn) => {
+    endedListeners.add(fn)
+    return () => endedListeners.delete(fn)
+  }
+
   async function request(path, options = {}) {
     if (!base) throw new ApiError('VITE_API_URL is not set. Copy .env.example to .env and set it, then restart.')
 
@@ -42,6 +50,7 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     } catch {
       // an empty or non-JSON body
     }
+    if (res.status === 401 && data && data.code === 'SESSION_ENDED') endedListeners.forEach((fn) => fn(data.error))
     if (!res.ok) throw new ApiError((data && data.error) || `Something went wrong (${res.status})`, res.status, (data && data.code) || '')
     return data
   }
@@ -73,7 +82,7 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     setupOptions: () => request('/api/prep/setup-options'),
   }
 
-  return { baseUrl: base, request, health, auth, me }
+  return { baseUrl: base, request, health, auth, me, onSessionEnded }
 }
 
 export const api = createApi({ baseUrl: import.meta.env?.VITE_API_URL })

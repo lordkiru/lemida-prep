@@ -7,7 +7,7 @@ import Field, { PasswordField } from '../../components/Field'
 import Notice from '../../components/Notice'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, notice } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [form, setForm] = useState({ email: '', password: '' })
@@ -55,6 +55,8 @@ export default function Login() {
       <p className="mb-5 text-muted">Sign in to carry on practising.</p>
 
       <form onSubmit={submit} noValidate className="grid gap-4">
+        {/* shown when this device was signed out because the account signed in somewhere else */}
+        {notice && !formError && <Notice kind="info">{notice}</Notice>}
         {formError && <Notice kind="error">{formError}</Notice>}
         <Field
           id="email"

@@ -113,3 +113,23 @@ test('a refused request throws an ApiError with the plain-English message, statu
   const g = fakeFetch(json(500, null))
   await assert.rejects(createApi({ baseUrl: 'https://x.test', fetchImpl: g.impl }).me.get(), (err) => err.status === 500 && err.code === '' && /500/.test(err.message))
 })
+
+// ── one sign-in per account ──
+test('a request answered 401 SESSION_ENDED tells the listeners (and a plain 401 does not)', async () => {
+  const heard = []
+  const f = fakeFetch(json(401, { error: 'You were signed out because this account was signed in on another device.', code: 'SESSION_ENDED' }))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  const stop = api.onSessionEnded((message) => heard.push(message))
+  await assert.rejects(api.me.get(), (err) => err.status === 401 && err.code === 'SESSION_ENDED')
+  assert.equal(heard.length, 1)
+  assert.match(heard[0], /another device/)
+
+  stop()
+  await assert.rejects(api.me.get())
+  assert.equal(heard.length, 1, 'after unsubscribing nothing more is heard')
+
+  const plain = createApi({ baseUrl: 'https://api.example.com', fetchImpl: fakeFetch(json(401, { error: 'Please sign in.', code: 'NOT_SIGNED_IN' })).impl })
+  plain.onSessionEnded((m) => heard.push(m))
+  await assert.rejects(plain.me.get())
+  assert.equal(heard.length, 1, 'being signed out is not the same as being replaced')
+})
