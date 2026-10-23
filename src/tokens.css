@@ -32,6 +32,7 @@
   --input-bg: rgba(255, 255, 255, 0.85);
   --input-border: #5B6785;
   --danger: #B42318;         /* error text: 6:1 on the card */
+  --danger-fg: #FFFFFF;      /* text on a danger button */
   --danger-bg: rgba(180, 35, 24, 0.08);
   --success-bg: rgba(15, 118, 110, 0.1);
   --choice-on: rgba(20, 184, 166, 0.14);
@@ -59,6 +60,7 @@
   --input-bg: rgba(255, 255, 255, 0.06);
   --input-border: #8392B5;
   --danger: #FDA29B;
+  --danger-fg: #2A0A07;
   --danger-bg: rgba(253, 162, 155, 0.12);
   --success-bg: rgba(94, 234, 212, 0.12);
   --choice-on: rgba(94, 234, 212, 0.16);
@@ -152,6 +154,26 @@ body {
   background: var(--choice-on);
 }
 .btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* The one button that cannot be taken back (deleting an account) */
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 0.85rem;
+  border: 0;
+  background: var(--danger);
+  color: var(--danger-fg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-danger:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }

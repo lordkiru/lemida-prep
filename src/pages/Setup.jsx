@@ -107,6 +107,11 @@ export default function Setup() {
 
   const { exams, classLevels, examYears, subjects, maxSubjects } = options.data
   const atMax = form.subjects.length >= maxSubjects
+  // subjects that already have questions come first; the rest are still choosable (they start working when their questions are added)
+  const orderedSubjects = [...subjects].sort((a, b) => Number(b.ready) - Number(a.ready))
+  const readyNames = new Set(subjects.filter((s) => s.ready).map((s) => s.name))
+  const someNotReady = subjects.some((s) => !s.ready)
+  const nothingReadyChosen = form.subjects.length > 0 && !form.subjects.some((name) => readyNames.has(name))
 
   return (
     <section className="glass p-6 sm:p-8" aria-labelledby="setup-title">
@@ -153,8 +158,18 @@ export default function Setup() {
           <p className="mb-3 text-sm text-muted" aria-live="polite">
             {form.subjects.length === 0 ? 'Choose all that apply. You can change this later.' : `${form.subjects.length} chosen. You can change this later.`}
           </p>
+          {someNotReady && (
+            <Notice kind="info" className="mb-3">
+              Subjects that say &ldquo;questions ready&rdquo; can be practised today. The others are coming soon: you can still choose them, and they start working when their questions are added.
+            </Notice>
+          )}
+          {nothingReadyChosen && (
+            <Notice kind="info" className="mb-3">
+              None of the subjects you chose have questions yet, so there is nothing to practise today. You can carry on and come back later, or also choose a subject that is ready.
+            </Notice>
+          )}
           <div className="grid gap-2 sm:grid-cols-2">
-            {subjects.map((s) => {
+            {orderedSubjects.map((s) => {
               const checked = form.subjects.includes(s.name)
               return (
                 <label key={s.name} className="choice">

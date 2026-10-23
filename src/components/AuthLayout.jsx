@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
 
 // The frame around the pages you see before you are inside the app (sign up, sign in, forgot password, first-time setup):
@@ -24,6 +24,15 @@ export default function AuthLayout({ wide = false }) {
       </header>
       <main id="main" className={`mx-auto px-4 pb-10 pt-6 ${wide ? 'max-w-2xl' : 'max-w-md'}`}>
         <Outlet />
+        <footer className="mt-6 text-center text-sm text-muted">
+          <Link to="/privacy" className="link font-semibold">
+            Privacy policy
+          </Link>
+          {' · '}
+          <Link to="/terms" className="link font-semibold">
+            Terms of use
+          </Link>
+        </footer>
       </main>
     </div>
   )

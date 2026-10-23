@@ -6,6 +6,7 @@ import AuthLayout from './components/AuthLayout'
 import ComingSoon from './pages/ComingSoon'
 import Debug from './pages/Debug'
 import Home from './pages/Home'
+import { Privacy, Terms } from './pages/Legal'
 import Practice from './pages/Practice'
 import PracticeSession from './pages/PracticeSession'
 import PracticeSummary from './pages/PracticeSummary'
@@ -35,6 +36,12 @@ export default function App() {
           <Route path="reset" element={<Reset />} />
           {/* hidden: not in the menu */}
           <Route path="debug" element={<Debug />} />
+        </Route>
+
+        {/* public, signed in or not */}
+        <Route element={<AuthLayout wide />}>
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="terms" element={<Terms />} />
         </Route>
 
         <Route element={<RequireAuth needSetup={false} />}>

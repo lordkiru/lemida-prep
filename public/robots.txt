@@ -1,0 +1,9 @@
+# Lemida Exam Prep. The sign-in, sign-up and information pages may be found; the app itself and the one-time email links may not.
+User-agent: *
+Allow: /
+Disallow: /debug
+Disallow: /setup
+Disallow: /practice
+Disallow: /profile
+Disallow: /verify
+Disallow: /reset

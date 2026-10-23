@@ -80,6 +80,8 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     get: () => request('/api/prep/me'),
     saveProfile: ({ exam, classLevel, examYear, subjects }) => send('PUT', '/api/prep/me/profile', { exam, classLevel, examYear, subjects }),
     setupOptions: () => request('/api/prep/setup-options'),
+    // deletes the student's account and everything attached to it; the password is asked for again
+    deleteAccount: (password) => send('DELETE', '/api/prep/me', { password }),
   }
 
   // Practice. A question arrives WITHOUT its answer; the answer and explanation come back only after answering it (the server checks the answer).

@@ -1,0 +1,26 @@
+# Checks every push and pull request: lint, tests and a production build. Cloudflare Pages builds and publishes the site on its own;
+# this shows a red cross on the commit when something is wrong, so it can be fixed before (or right after) it goes live.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          VITE_API_URL: https://api.lemidaitsolutions.com

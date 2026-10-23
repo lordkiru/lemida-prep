@@ -90,6 +90,17 @@ export default function Signup() {
         <button type="submit" disabled={busy} className="btn-primary w-full">
           {busy ? 'Creating your account...' : 'Create account'}
         </button>
+        <p className="m-0 text-center text-sm text-muted">
+          By creating an account you agree to the{' '}
+          <Link to="/terms" className="link font-semibold">
+            terms of use
+          </Link>{' '}
+          and the{' '}
+          <Link to="/privacy" className="link font-semibold">
+            privacy policy
+          </Link>
+          . If you are under 18, please ask a parent or guardian first.
+        </p>
       </form>
 
       <p className="mt-5 text-sm">

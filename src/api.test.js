@@ -159,3 +159,13 @@ test('practice calls: the right paths and methods, the session id is escaped, an
   assert.deepEqual(JSON.parse(f.calls[2].options.body), { subject: 'Biology', restart: true })
   assert.deepEqual(JSON.parse(f.calls[4].options.body), { questionId: 'q1', chosenIndex: 2 })
 })
+
+// ── deleting the account ──
+test('deleteAccount is a DELETE of /api/prep/me with only the password in the body', async () => {
+  const f = fakeFetch(json(200, { ok: true }))
+  await createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl }).me.deleteAccount('my-password')
+  assert.equal(f.calls[0].url, 'https://api.example.com/api/prep/me')
+  assert.equal(f.calls[0].options.method, 'DELETE')
+  assert.equal(f.calls[0].options.credentials, 'include')
+  assert.deepEqual(JSON.parse(f.calls[0].options.body), { password: 'my-password' })
+})

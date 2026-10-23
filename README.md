@@ -85,6 +85,20 @@ the server prints each email, link included, to its own log when `NODE_ENV` is n
 - Keyboard: A to D or 1 to 4 choose an answer; focus moves to "Next question" after answering. Right and wrong are shown in words ("Correct answer",
   "Your answer") as well as colour.
 
+## Security headers, privacy and data
+
+- **Security headers** (`scripts/make-headers.mjs`, run by `npm run build`) write `dist/_headers`: a content security policy (only this site's own
+  files, the API in `VITE_API_URL`, Google Fonts and one fingerprinted inline script, the theme script that stops the light/dark flash),
+  no framing of the site (`frame-ancestors 'none'`, `X-Frame-Options`), HSTS, a permissions policy and a cross-origin opener policy. Cloudflare Pages
+  applies the file to every page. The fingerprint is recalculated at every build, so editing the inline script in `index.html` needs no manual step.
+  `src/headers.test.js` covers the generator, and the browser journeys were run against the finished build with these headers applied.
+- **`/privacy` and `/terms`** are public pages in plain language (`src/pages/Legal.jsx`), linked from sign-up, every sign-in page and Profile. If the app
+  starts to collect or share something new (analytics, payments, advertising), update that text first. They are a plain-language draft: have a
+  lawyer check them before the app is promoted widely.
+- **Delete my account** (Profile) asks for the password again and deletes the account, its practice rounds and its progress for good
+  (`DELETE /api/prep/me`). An account that never confirms its email is deleted automatically after 7 days (a database rule on the server).
+- **`public/robots.txt`** keeps search engines out of the app and the one-time email links.
+
 ## Design tokens and themes
 
 Everything visual comes from `src/tokens.css`:

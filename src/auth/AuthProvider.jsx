@@ -62,6 +62,9 @@ export default function AuthProvider({ children }) {
     setState(signedOut())
   }, [])
 
-  const value = useMemo(() => ({ ...state, retry, setUser, login, logout }), [state, retry, setUser, login, logout])
+  // The student is no longer signed in (their account was deleted): show the sign-in page, with a line saying why.
+  const endSession = useCallback((notice) => setState(signedOut(notice)), [])
+
+  const value = useMemo(() => ({ ...state, retry, setUser, login, logout, endSession }), [state, retry, setUser, login, logout, endSession])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
