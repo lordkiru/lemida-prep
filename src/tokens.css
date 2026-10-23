@@ -336,6 +336,18 @@ a.btn-primary {
   border-radius: 999px;
   border: 1.5px solid currentColor;
 }
+/* an answer shown in a list (the Mistakes page), not something to tap: no hover effect */
+.answer.is-static {
+  cursor: default;
+}
+.answer.is-static:hover:not(:disabled) {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+}
+.answer.is-right.is-static:hover:not(:disabled) {
+  background: var(--success-bg);
+  border-color: var(--accent);
+}
 .answer.is-right {
   border-color: var(--accent);
   background: var(--success-bg);

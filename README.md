@@ -85,6 +85,19 @@ the server prints each email, link included, to its own log when `NODE_ENV` is n
 - Keyboard: A to D or 1 to 4 choose an answer; focus moves to "Next question" after answering. Right and wrong are shown in words ("Correct answer",
   "Your answer") as well as colour.
 
+## Mistakes, reporting a question, and Home
+
+- **Mistakes** (`/mistakes`) lists the questions the student's last answer got wrong, most-missed first, with the right answer and the explanation. (That is
+  safe: a question is only on the list because the student has already answered it and seen both.) Chips filter by subject, and **Practise these** starts a
+  round made only of that subject's mistakes (`mode: 'mistakes'`). A question leaves the list the next time it is answered correctly; "Practise again" after a
+  mistakes round starts another one, or says plainly that there are none left.
+- **Report a problem with this question** (`src/components/ReportQuestion.jsx`) appears under the feedback after answering, in the results, and on the Mistakes
+  page. The student picks what is wrong (wrong answer, more than one answer, a typo or unclear, something else) and may add a note. It goes into the question
+  bank's existing reports, so Content Studio shows it as "Lemida Exam Prep (students)", and three open "wrong answer" reports still send a question back to
+  draft. Only an answered question can be reported, once each. Focus is managed throughout (it moves into the form, back to the link on Cancel, and to the
+  thank-you message after sending).
+- **Home** shows where to carry on (an open round), the mistakes waiting, and how much of each subject has been seen.
+
 ## Security headers, privacy and data
 
 - **Security headers** (`scripts/make-headers.mjs`, run by `npm run build`) write `dist/_headers`: a content security policy (only this site's own

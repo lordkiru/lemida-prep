@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import Notice from '../components/Notice'
+import ReportQuestion from '../components/ReportQuestion'
 import { firstUnanswered, ofLabel, optionForKey, optionLetter } from '../practice/helpers'
 
 // One practice round: a question at a time. Choose an answer, see at once whether it was right and why, then go on.
@@ -155,7 +156,7 @@ export default function PracticeSession() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="m-0 text-sm font-semibold text-muted">
           {session.subject}
-          {session.allSeen ? ' · Revision' : ''}
+          {session.mode === 'mistakes' ? ' · Mistakes' : session.allSeen ? ' · Revision' : ''}
         </p>
         <Link to="/practice" className="link text-sm font-semibold">
           Finish later
@@ -216,6 +217,8 @@ export default function PracticeSession() {
             </div>
           </div>
         )}
+        {/* outside the live region above, so opening the form is not read out as news */}
+        {result && <ReportQuestion key={current.id} questionId={current.id} className="mt-5" />}
       </div>
 
       {answered > 0 && !result && (

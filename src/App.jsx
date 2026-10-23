@@ -6,6 +6,7 @@ import AuthLayout from './components/AuthLayout'
 import ComingSoon from './pages/ComingSoon'
 import Debug from './pages/Debug'
 import Home from './pages/Home'
+import Mistakes from './pages/Mistakes'
 import { Privacy, Terms } from './pages/Legal'
 import Practice from './pages/Practice'
 import PracticeSession from './pages/PracticeSession'
@@ -57,7 +58,7 @@ export default function App() {
             <Route path="practice/session/:sessionId" element={<PracticeSession />} />
             <Route path="practice/session/:sessionId/summary" element={<PracticeSummary />} />
             <Route path="mocks" element={<ComingSoon title="Mocks" />} />
-            <Route path="mistakes" element={<ComingSoon title="Mistakes" />} />
+            <Route path="mistakes" element={<Mistakes />} />
             <Route path="profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

@@ -169,3 +169,34 @@ test('deleteAccount is a DELETE of /api/prep/me with only the password in the bo
   assert.equal(f.calls[0].options.credentials, 'include')
   assert.deepEqual(JSON.parse(f.calls[0].options.body), { password: 'my-password' })
 })
+
+// ── mistakes and reports ──
+test('a mistakes round is started with mode "mistakes"; a normal round sends no mode; restart still works', async () => {
+  const f = fakeFetch(json(200, {}))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.practice.start({ subject: 'Biology' })
+  await api.practice.start({ subject: 'Biology', mode: 'mistakes' })
+  await api.practice.start({ subject: 'Biology', mode: 'mistakes', restart: true })
+  await api.practice.start({ subject: 'Biology', mode: 'anything-else' })
+  assert.deepEqual(f.calls.map((c) => JSON.parse(c.options.body)), [
+    { subject: 'Biology' },
+    { subject: 'Biology', mode: 'mistakes' },
+    { subject: 'Biology', mode: 'mistakes', restart: true },
+    { subject: 'Biology' },
+  ])
+})
+
+test('the mistakes list, with or without a subject, and a question report', async () => {
+  const f = fakeFetch(json(200, {}))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.practice.mistakes()
+  await api.practice.mistakes('General Mathematics')
+  await api.practice.reportQuestion('q/1', { reason: 'typo_unclear', comment: 'a typo' })
+  await api.practice.reportQuestion('q2', { reason: 'other', comment: '' })
+  assert.equal(f.calls[0].url, 'https://api.example.com/api/prep/practice/mistakes')
+  assert.equal(f.calls[1].url, 'https://api.example.com/api/prep/practice/mistakes?subject=General%20Mathematics')
+  assert.equal(f.calls[2].url, 'https://api.example.com/api/prep/practice/questions/q%2F1/report')
+  assert.equal(f.calls[2].options.method, 'POST')
+  assert.deepEqual(JSON.parse(f.calls[2].options.body), { reason: 'typo_unclear', comment: 'a typo' })
+  assert.deepEqual(JSON.parse(f.calls[3].options.body), { reason: 'other' }, 'an empty note is not sent')
+})

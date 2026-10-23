@@ -88,7 +88,12 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
   const enc = encodeURIComponent
   const practice = {
     subjects: () => request('/api/prep/practice/subjects'),
-    start: ({ subject, restart }) => send('POST', '/api/prep/practice/sessions', restart ? { subject, restart: true } : { subject }),
+    // mode 'mistakes' starts a round made only of the questions the student got wrong; restart throws away the open round first
+    start: ({ subject, restart, mode }) => send('POST', '/api/prep/practice/sessions', { subject, ...(mode === 'mistakes' ? { mode } : {}), ...(restart ? { restart: true } : {}) }),
+    // the questions the student got wrong last time, with the right answer and explanation (they have already answered each one)
+    mistakes: (subject) => request(`/api/prep/practice/mistakes${subject ? `?subject=${enc(subject)}` : ''}`),
+    // tell us a question has a problem (only a question the student has answered); the reply says nothing about the question
+    reportQuestion: (questionId, { reason, comment }) => send('POST', `/api/prep/practice/questions/${enc(questionId)}/report`, comment ? { reason, comment } : { reason }),
     get: (sessionId) => request(`/api/prep/practice/sessions/${enc(sessionId)}`),
     answer: (sessionId, { questionId, chosenIndex }) => send('POST', `/api/prep/practice/sessions/${enc(sessionId)}/answer`, { questionId, chosenIndex }),
     finish: (sessionId) => send('POST', `/api/prep/practice/sessions/${enc(sessionId)}/finish`, {}),

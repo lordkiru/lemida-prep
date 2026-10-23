@@ -36,3 +36,18 @@ export function seenPercent(seen, available) {
 }
 
 export const questionsLabel = (n) => `${n} question${n === 1 ? '' : 's'}`
+
+// What can be wrong with a question, in the student's words. The values are the ones the API accepts.
+export const REPORT_REASONS = [
+  { value: 'wrong_answer', label: 'The answer marked right is wrong' },
+  { value: 'two_answers', label: 'More than one answer could be right' },
+  { value: 'typo_unclear', label: 'There is a typo, or the question is unclear' },
+  { value: 'other', label: 'Something else' },
+]
+export const MAX_REPORT_NOTE = 500
+
+// "Missed 1 time", "Missed 3 times"
+export const missedLabel = (n) => `Missed ${n} time${n === 1 ? '' : 's'}`
+
+// The label of a round: practice rounds have none, a mistakes round says so
+export const roundLabel = (mode) => (mode === 'mistakes' ? 'Mistakes' : '')

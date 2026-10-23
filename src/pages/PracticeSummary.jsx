@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import Notice from '../components/Notice'
+import ReportQuestion from '../components/ReportQuestion'
 import { optionLetter, scoreMessage } from '../practice/helpers'
 
 // The end of a round: the score, and every question that was missed, with the right answer and why.
@@ -28,7 +29,8 @@ export default function PracticeSummary() {
     setBusy(true)
     setStartError('')
     try {
-      const data = await api.practice.start({ subject: state.summary.subject })
+      // a mistakes round is followed by another mistakes round (or a plain message when none are left), a practice round by a practice round
+      const data = await api.practice.start({ subject: state.summary.subject, mode: state.summary.mode })
       navigate(`/practice/session/${data.session.id}`)
     } catch (err) {
       setStartError(err.message)
@@ -68,7 +70,7 @@ export default function PracticeSummary() {
       <div className="glass mb-5 p-6 text-center sm:p-8">
         <p className="m-0 text-sm font-semibold text-muted">
           {s.subject}
-          {s.allSeen ? ' · Revision' : ''}
+          {s.mode === 'mistakes' ? ' · Mistakes' : s.allSeen ? ' · Revision' : ''}
         </p>
         <h1 id="page-title" className="mb-1 mt-2 text-5xl font-extrabold">
           {s.correct} <span className="text-muted">/ {s.total}</span>
@@ -103,7 +105,9 @@ export default function PracticeSummary() {
                   <span className="font-semibold text-accent">Correct answer: </span>
                   {optionLetter(m.correctIndex)}. {m.options[m.correctIndex]}
                 </p>
-                {m.explanation && <p className="m-0 leading-relaxed">{m.explanation}</p>}
+                {m.explanation && <p className="m-0 mb-3 leading-relaxed">{m.explanation}</p>}
+                <ReportQuestion key={m.id} questionId={m.id} />
+
               </li>
             ))}
           </ol>

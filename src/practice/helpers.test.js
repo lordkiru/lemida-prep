@@ -46,3 +46,19 @@ test('labels and progress', () => {
   assert.equal(seenPercent(20, 14), 100, 'never above 100')
   assert.equal(seenPercent(3, 0), 0, 'no division by zero')
 })
+
+import { MAX_REPORT_NOTE, REPORT_REASONS, missedLabel, roundLabel } from './helpers.js'
+
+test('the reasons a question can be reported for are exactly the ones the API accepts, each with a plain label', () => {
+  assert.deepEqual(REPORT_REASONS.map((r) => r.value), ['wrong_answer', 'two_answers', 'typo_unclear', 'other'])
+  for (const r of REPORT_REASONS) assert.ok(r.label.length > 10 && !/_/.test(r.label), r.value)
+  assert.equal(MAX_REPORT_NOTE, 500)
+})
+
+test('mistake labels', () => {
+  assert.equal(missedLabel(1), 'Missed 1 time')
+  assert.equal(missedLabel(3), 'Missed 3 times')
+  assert.equal(roundLabel('mistakes'), 'Mistakes')
+  assert.equal(roundLabel('practice'), '')
+  assert.equal(roundLabel(undefined), '')
+})
