@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import Brand from './Brand'
 import ThemeToggle from './ThemeToggle'
 
 // The frame around the pages you see before you are inside the app (sign up, sign in, forgot password, first-time setup):
@@ -13,13 +14,7 @@ export default function AuthLayout({ wide = false }) {
         Skip to content
       </a>
       <header className="mx-auto flex max-w-3xl items-center justify-between px-4 pt-4">
-        <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="" width="36" height="36" className="h-9 w-9" />
-          <div className="leading-tight">
-            <div className="text-base font-extrabold">Exam Prep</div>
-            <div className="text-xs text-muted">by Lemida</div>
-          </div>
-        </div>
+        <Brand size={44} className="!gap-3" />
         <ThemeToggle />
       </header>
       <main id="main" className={`mx-auto px-4 pb-10 pt-6 ${wide ? 'max-w-2xl' : 'max-w-md'}`}>

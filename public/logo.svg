@@ -1,24 +1,2 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Lemida Exam Prep">
-  <!-- PLACEHOLDER logo: a simple "A+" medal. Replace this file with the final green 3D "A+" medal, then run `npm run icons`
-       to rebuild the app icons from it. Keep the artwork inside the 128 x 128 box, centred, with room around the edge. -->
-  <defs>
-    <linearGradient id="medal" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#5EEAD4" />
-      <stop offset="1" stop-color="#0F9D8A" />
-    </linearGradient>
-    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#14B8A6" />
-      <stop offset="1" stop-color="#0B6F63" />
-    </linearGradient>
-  </defs>
-  <!-- ribbon tails -->
-  <path d="M40 92 L30 124 L48 114 L58 126 L62 98 Z" fill="url(#ribbon)" />
-  <path d="M88 92 L98 124 L80 114 L70 126 L66 98 Z" fill="url(#ribbon)" />
-  <!-- medal -->
-  <circle cx="64" cy="58" r="50" fill="url(#medal)" />
-  <circle cx="64" cy="58" r="42" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2.5" />
-  <!-- A -->
-  <path fill="#07342E" fill-rule="evenodd" d="M24 82 L47 30 L57 30 L80 82 L69 82 L64 70 L40 70 L35 82 Z M44 61 L60 61 L52 41 Z" />
-  <!-- + -->
-  <path fill="#07342E" d="M84 40 h7 v10 h10 v7 h-10 v10 h-7 v-10 h-10 v-7 h10 z" />
-</svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64"><title>Lemida Exam Prep</title><defs><linearGradient id="lgTile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B2D5E"/><stop offset="1" stop-color="#0A1330"/></linearGradient><linearGradient id="lgSide" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#059669"/><stop offset="1" stop-color="#022C22"/></linearGradient><radialGradient id="lgFace" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#A7F3D0"/><stop offset="0.35" stop-color="#34D399"/><stop offset="0.75" stop-color="#059669"/><stop offset="1" stop-color="#065F46"/></radialGradient><radialGradient id="lgField" cx="0.62" cy="0.68" r="0.8"><stop offset="0" stop-color="#10B981"/><stop offset="1" stop-color="#064E3B"/></radialGradient><linearGradient id="lgRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="1" stop-color="#000000" stop-opacity="0.4"/></linearGradient><linearGradient id="lgLetter" gradientUnits="userSpaceOnUse" x1="0" y1="20" x2="0" y2="42"><stop offset="0" stop-color="#F0FDF4"/><stop offset="0.55" stop-color="#A7F3D0"/><stop offset="1" stop-color="#6EE7B7"/></linearGradient><radialGradient id="lgSpec" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.65"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient></defs><rect width="64" height="64" rx="16" fill="url(#lgTile)"/><circle cx="34.7" cy="33.6" r="22" fill="#022C22"/><circle cx="33.8" cy="32.4" r="22" fill="url(#lgSide)"/><circle cx="32.9" cy="31.2" r="22" fill="url(#lgSide)"/><circle cx="32" cy="30" r="22" fill="url(#lgFace)"/><circle cx="32" cy="30" r="21.2" fill="none" stroke="url(#lgRim)" stroke-width="1.6"/><circle cx="32" cy="30" r="17.4" fill="url(#lgField)"/><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"><g stroke="#022C22" transform="translate(1.2 1.6)"><path d="M20 40l6.5-19h3l6.5 19M22.6 33.5h10.8"/><path d="M42.5 24v10M37.5 29h10"/></g><g stroke="#047857" transform="translate(0.5 0.7)"><path d="M20 40l6.5-19h3l6.5 19M22.6 33.5h10.8"/><path d="M42.5 24v10M37.5 29h10"/></g><g stroke="url(#lgLetter)"><path d="M20 40l6.5-19h3l6.5 19M22.6 33.5h10.8"/><path d="M42.5 24v10M37.5 29h10"/></g></g><ellipse cx="23" cy="17" rx="11" ry="6" fill="url(#lgSpec)" transform="rotate(-32 23 17)"/></svg>

@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import Icon from './icons'
+import Brand from './Brand'
 import ThemeToggle from './ThemeToggle'
 import { NAV_ITEMS } from '../navItems'
 
@@ -18,13 +19,7 @@ export default function AppShell() {
 
       {/* PC: sidebar */}
       <aside className="glass fixed inset-y-3 left-3 z-30 hidden w-60 flex-col p-4 lg:flex" aria-label="Sidebar">
-        <div className="mb-6 flex items-center gap-3 px-2 pt-1">
-          <img src="/logo.svg" alt="" width="40" height="40" className="h-10 w-10" />
-          <div className="leading-tight">
-            <div className="text-base font-extrabold">Exam Prep</div>
-            <div className="text-xs text-muted">by Lemida</div>
-          </div>
-        </div>
+        <Brand size={44} className="mb-6 px-2 pt-1" />
         <nav aria-label="Main" className="flex flex-1 flex-col gap-1">
           {NAV_ITEMS.map((item) => (
             <NavLink
@@ -49,10 +44,7 @@ export default function AppShell() {
 
       {/* Phone: top bar */}
       <header className="glass sticky top-2 z-30 mx-2 mt-2 flex items-center justify-between !rounded-2xl px-3 py-2 lg:hidden">
-        <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="" width="32" height="32" className="h-8 w-8" />
-          <span className="text-base font-extrabold">Exam Prep</span>
-        </div>
+        <Brand size={36} className="!gap-2" />
         <ThemeToggle />
       </header>
 

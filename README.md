@@ -119,10 +119,19 @@ not cached, so offline the page falls back to the system font.
 
 ## Logo and icons
 
-`public/logo.svg` is a **placeholder** "A+" medal, used in the sidebar, the top bar and as the app icon. To use the final logo:
+The logo is the green 3D "A+" medal, in two files that are kept exactly as designed:
 
-1. Replace `public/logo.svg` with the new artwork (keep it inside its box, centred, with some room around the edge).
-2. Run `npm run icons` to rebuild `public/icons/` (192, 512, maskable and Apple touch icons), and commit the result.
+| File | What it is | Used for |
+| --- | --- | --- |
+| `public/logo.svg` | the medal on its navy tile | **dark mode** screens, the SVG favicon, and all the app icons |
+| `public/logo-no-tile.svg` | the same medal with no tile | **light mode** screens |
+
+- `src/components/Logo.jsx` shows one or the other with the theme, and `Brand.jsx` adds the name beside it ("Lemida" small above "Exam Prep" in bold).
+  Both are shown as `<img>`, never pasted inline as `<svg>`: the two files use the same gradient ids, so two inline copies on one page would clash.
+- `npm run icons` rebuilds `public/icons/` from them: `favicon-32.png`, `icon-192.png` and `icon-512.png` (the tile), `maskable-512.png`
+  (a full square of navy `#0A1330` with the medal kept inside the central 80% safe zone, so Android can crop it to any shape) and
+  `apple-touch-icon.png` (180 x 180, solid navy behind the tile, no transparency). Run it again whenever a logo file changes, and commit the result.
+- `src/logo.test.js` checks all of this, including that nothing but navy lies outside the maskable icon's safe zone.
 
 ## Rules for this repo
 
