@@ -8,7 +8,7 @@ export const THEME_COLOR = '#070D1F'
 
 export const pwaOptions = {
   registerType: 'autoUpdate',
-  includeAssets: ['logo.svg', 'icons/apple-touch-icon.png'],
+  includeAssets: ['logo.svg', 'logo-no-tile.svg', 'icons/favicon-32.png', 'icons/apple-touch-icon.png'],
   manifest: {
     name: 'Lemida Exam Prep',
     short_name: 'Exam Prep',
