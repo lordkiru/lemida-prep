@@ -5,7 +5,7 @@
 // whenever that script is edited. So the build reads the finished dist/index.html, hashes each inline script, and writes the policy to match.
 // Anything else inline, or from another website, is refused by the browser.
 //
-// The same script is used by Content Studio (content-studio/scripts/make-headers.mjs); keep them identical.
+// This file exists in two places and must stay identical: lemida-prep/scripts/make-headers.mjs and content-studio/scripts/make-headers.mjs.
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
