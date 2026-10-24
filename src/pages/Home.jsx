@@ -83,9 +83,14 @@ export default function Home() {
         </div>
       )}
 
-      <p className="m-0 text-sm text-muted">
-        Mocks are on their way. <span className="chip-amber ml-2">Coming soon</span>
-      </p>
+      {ready.length > 0 && (
+        <div className="glass flex flex-wrap items-center justify-between gap-3 p-5">
+          <p className="m-0 font-semibold">Ready to test yourself? Sit a timed mock exam.</p>
+          <Link to="/mocks" className="btn-secondary">
+            Mock exams
+          </Link>
+        </div>
+      )}
     </section>
   )
 }

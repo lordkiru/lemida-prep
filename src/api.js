@@ -100,7 +100,19 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     summary: (sessionId) => request(`/api/prep/practice/sessions/${enc(sessionId)}/summary`),
   }
 
-  return { baseUrl: base, request, health, auth, me, practice, onSessionEnded }
+  // Mock exams: a timed paper in one subject. The server owns the clock and keeps the saved choices; questions arrive without answers, and the
+  // right answers come only with the result, after the paper is handed in or time runs out.
+  const mocks = {
+    list: () => request('/api/prep/mocks'),
+    start: ({ subject }) => send('POST', '/api/prep/mocks', { subject }),
+    get: (mockId) => request(`/api/prep/mocks/${enc(mockId)}`),
+    // chosenIndex null takes the answer back
+    saveAnswer: (mockId, { questionId, chosenIndex }) => send('PUT', `/api/prep/mocks/${enc(mockId)}/answer`, { questionId, chosenIndex }),
+    submit: (mockId) => send('POST', `/api/prep/mocks/${enc(mockId)}/submit`, {}),
+    result: (mockId) => request(`/api/prep/mocks/${enc(mockId)}/result`),
+  }
+
+  return { baseUrl: base, request, health, auth, me, practice, mocks, onSessionEnded }
 }
 
 export const api = createApi({ baseUrl: import.meta.env?.VITE_API_URL })

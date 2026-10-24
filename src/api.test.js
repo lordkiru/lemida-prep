@@ -200,3 +200,21 @@ test('the mistakes list, with or without a subject, and a question report', asyn
   assert.deepEqual(JSON.parse(f.calls[2].options.body), { reason: 'typo_unclear', comment: 'a typo' })
   assert.deepEqual(JSON.parse(f.calls[3].options.body), { reason: 'other' }, 'an empty note is not sent')
 })
+
+// ── mock exams ──
+test('mock calls: the right paths and methods, ids escaped, only the named fields sent, and null takes an answer back', async () => {
+  const f = fakeFetch(json(200, {}))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.mocks.list()
+  await api.mocks.start({ subject: 'Biology', extra: 'ignored' })
+  await api.mocks.get('m/1')
+  await api.mocks.saveAnswer('m1', { questionId: 'q1', chosenIndex: 2, correctIndex: 1 })
+  await api.mocks.saveAnswer('m1', { questionId: 'q1', chosenIndex: null })
+  await api.mocks.submit('m1')
+  await api.mocks.result('m1')
+  const calls = f.calls.map((c) => `${c.options.method || 'GET'} ${c.url.replace('https://api.example.com/api/prep', '')}`)
+  assert.deepEqual(calls, ['GET /mocks', 'POST /mocks', 'GET /mocks/m%2F1', 'PUT /mocks/m1/answer', 'PUT /mocks/m1/answer', 'POST /mocks/m1/submit', 'GET /mocks/m1/result'])
+  assert.deepEqual(JSON.parse(f.calls[1].options.body), { subject: 'Biology' })
+  assert.deepEqual(JSON.parse(f.calls[3].options.body), { questionId: 'q1', chosenIndex: 2 })
+  assert.deepEqual(JSON.parse(f.calls[4].options.body), { questionId: 'q1', chosenIndex: null })
+})

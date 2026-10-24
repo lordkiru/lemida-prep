@@ -49,5 +49,40 @@ export const MAX_REPORT_NOTE = 500
 // "Missed 1 time", "Missed 3 times"
 export const missedLabel = (n) => `Missed ${n} time${n === 1 ? '' : 's'}`
 
+// ── mock exams ──
+
+// 2700 -> "45:00", 65 -> "1:05", 3725 -> "1:02:05" (never negative)
+export function formatClock(seconds) {
+  const s = Math.max(0, Math.floor(Number(seconds) || 0))
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = String(s % 60).padStart(2, '0')
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`
+}
+
+// 750 -> "12 min 30 s", 600 -> "10 min", 45 -> "45 s"
+export function durationLabel(seconds) {
+  const s = Math.max(0, Math.round(Number(seconds) || 0))
+  const m = Math.floor(s / 60)
+  const rest = s % 60
+  if (m === 0) return `${rest} s`
+  return rest === 0 ? `${m} min` : `${m} min ${rest} s`
+}
+
+// Time warnings are read out once as the clock passes these many seconds left (10 minutes, 5 minutes, 1 minute)
+export const TIME_WARNINGS = [600, 300, 60]
+// The warning to give now, or '' - `before` and `now` are the seconds left a moment ago and now, so each warning is given once
+export function timeWarning(before, now) {
+  const crossed = TIME_WARNINGS.find((t) => before > t && now <= t)
+  if (crossed === undefined) return ''
+  return crossed === 60 ? 'One minute left.' : `${crossed / 60} minutes left.`
+}
+
+// The colour family of a score label, for the badge (words always come with it)
+export const labelTone = (label) => (label === 'Excellent' || label === 'Good' ? 'good' : label === 'Fair' ? 'fair' : 'low')
+
+// "3 of 5 answered" / how many are left
+export const unansweredCount = (total, answered) => Math.max(0, total - answered)
+
 // The label of a round: practice rounds have none, a mistakes round says so
 export const roundLabel = (mode) => (mode === 'mistakes' ? 'Mistakes' : '')

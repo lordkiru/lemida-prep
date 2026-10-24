@@ -3,9 +3,11 @@ import AuthProvider from './auth/AuthProvider'
 import { GuestOnly, RequireAuth } from './auth/guards'
 import AppShell from './components/AppShell'
 import AuthLayout from './components/AuthLayout'
-import ComingSoon from './pages/ComingSoon'
 import Debug from './pages/Debug'
 import Home from './pages/Home'
+import MockExam from './pages/MockExam'
+import MockResult from './pages/MockResult'
+import Mocks from './pages/Mocks'
 import Mistakes from './pages/Mistakes'
 import { Privacy, Terms } from './pages/Legal'
 import Practice from './pages/Practice'
@@ -57,7 +59,9 @@ export default function App() {
             <Route path="practice" element={<Practice />} />
             <Route path="practice/session/:sessionId" element={<PracticeSession />} />
             <Route path="practice/session/:sessionId/summary" element={<PracticeSummary />} />
-            <Route path="mocks" element={<ComingSoon title="Mocks" />} />
+            <Route path="mocks" element={<Mocks />} />
+            <Route path="mocks/:mockId" element={<MockExam />} />
+            <Route path="mocks/:mockId/result" element={<MockResult />} />
             <Route path="mistakes" element={<Mistakes />} />
             <Route path="profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/" replace />} />

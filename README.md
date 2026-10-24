@@ -96,7 +96,23 @@ the server prints each email, link included, to its own log when `NODE_ENV` is n
   bank's existing reports, so Content Studio shows it as "Lemida Exam Prep (students)", and three open "wrong answer" reports still send a question back to
   draft. Only an answered question can be reported, once each. Focus is managed throughout (it moves into the form, back to the link on Cancel, and to the
   thank-you message after sending).
-- **Home** shows where to carry on (an open round), the mistakes waiting, and how much of each subject has been seen.
+- **Home** shows where to carry on (an open round), the mistakes waiting, how much of each subject has been seen, and a link to the mock exams.
+
+## Mock exams
+
+`/mocks` lists the student's subjects. A mock is a **timed paper in one subject: up to 40 questions in 45 minutes** (a subject with fewer ready questions gets a shorter
+paper with a proportionally shorter clock). The page shows the last and best score for each subject and the recent papers.
+
+- **The server owns the clock.** The paper has an end time; the screen counts down from the seconds the server says are left, and asks the server again when the
+  student comes back to the page. Leaving does not stop the clock. When it reaches zero the paper is handed in automatically with the answers saved so far,
+  and a paper that ran out while the student was away is graded the next time anything looks at it.
+- **Choices are saved as they are made** (and can be changed or taken back with "Clear my answer") but nothing says whether an answer is right: that comes only with
+  the results. Choices that could not be saved are shown with a "try again"; handing in first makes sure the server holds every choice.
+- **During the paper:** the clock (read out at 10, 5 and 1 minutes left), "Question 3 of 40", Previous and Next, a grid of question numbers (a dot marks an
+  answered one), A to D on the keyboard, and "Hand in my paper", which first says how many are answered and that blanks score nothing.
+- **The results** (`/mocks/:id/result`): the score, a plain label (Excellent, Good, Fair, Needs work), the time taken, how it went topic by topic, and every question
+  with the right answer and the explanation (filter: All, Wrong, Not answered). The label is **not a WAEC or NECO grade** and the page says so. Answered questions
+  count as seen, so wrong ones join the Mistakes list.
 
 ## Security headers, privacy and data
 

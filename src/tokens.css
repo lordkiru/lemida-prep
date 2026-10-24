@@ -365,6 +365,102 @@ a.btn-primary {
   color: var(--danger);
 }
 
+/* ── Mock exams ── */
+/* the answer the student has chosen (nothing is marked right or wrong during a mock): a border, a tint, a tag and a filled radio, so it never
+   relies on colour alone */
+.answer.is-selected {
+  border-color: var(--accent);
+  background: var(--choice-on);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.answer.is-selected .answer-letter {
+  background: var(--accent);
+  color: var(--bg);
+}
+.answer.is-selected .answer-tag {
+  color: var(--accent);
+}
+
+/* the question numbers a student can jump to */
+.qnum {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border-radius: 0.7rem;
+  border: 1.5px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.qnum.is-answered {
+  border-color: var(--accent);
+  background: var(--choice-on);
+}
+.qnum.is-current {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  box-shadow: inset 0 0 0 1px var(--focus);
+}
+.qnum:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.qdot {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 50%;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-left: -0.2rem;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* the score label: always words, the colour only helps */
+.score-badge {
+  display: inline-block;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.score-badge.is-good {
+  color: var(--accent);
+  background: var(--success-bg);
+}
+.score-badge.is-fair {
+  background: var(--amber);
+  color: var(--amber-fg);
+  border-color: transparent;
+}
+.score-badge.is-low {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+.status-chip {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.status-chip.is-right {
+  color: var(--accent);
+}
+.status-chip.is-wrong {
+  color: var(--danger);
+}
+.status-chip.is-blank {
+  color: var(--muted);
+}
+
 /* Keep people who ask for less motion from getting it */
 @media (prefers-reduced-motion: reduce) {
   * {

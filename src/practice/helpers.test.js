@@ -62,3 +62,44 @@ test('mistake labels', () => {
   assert.equal(roundLabel('practice'), '')
   assert.equal(roundLabel(undefined), '')
 })
+
+import { TIME_WARNINGS, durationLabel, formatClock, labelTone, timeWarning, unansweredCount } from './helpers.js'
+
+test('the clock shows minutes and seconds, and hours only when needed; it never goes negative', () => {
+  assert.equal(formatClock(2700), '45:00')
+  assert.equal(formatClock(65), '1:05')
+  assert.equal(formatClock(9), '0:09')
+  assert.equal(formatClock(0), '0:00')
+  assert.equal(formatClock(3725), '1:02:05')
+  assert.equal(formatClock(-5), '0:00')
+  assert.equal(formatClock(59.9), '0:59')
+  for (const bad of [undefined, null, NaN, 'abc']) assert.equal(formatClock(bad), '0:00', String(bad))
+})
+
+test('how long it took, in words', () => {
+  assert.equal(durationLabel(750), '12 min 30 s')
+  assert.equal(durationLabel(600), '10 min')
+  assert.equal(durationLabel(45), '45 s')
+  assert.equal(durationLabel(0), '0 s')
+  assert.equal(durationLabel(2700), '45 min')
+})
+
+test('time warnings are given once each, as the clock passes 10 minutes, 5 minutes and 1 minute', () => {
+  assert.deepEqual(TIME_WARNINGS, [600, 300, 60])
+  assert.equal(timeWarning(601, 600), '10 minutes left.')
+  assert.equal(timeWarning(301, 300), '5 minutes left.')
+  assert.equal(timeWarning(61, 60), 'One minute left.')
+  assert.equal(timeWarning(600, 599), '', 'already past it a second ago')
+  assert.equal(timeWarning(2700, 2699), '')
+  assert.equal(timeWarning(302, 299), '5 minutes left.', 'a long gap (a locked phone) still gives the warning that was crossed')
+  assert.equal(timeWarning(30, 0), '')
+})
+
+test('badge tones for the score labels', () => {
+  assert.equal(labelTone('Excellent'), 'good')
+  assert.equal(labelTone('Good'), 'good')
+  assert.equal(labelTone('Fair'), 'fair')
+  assert.equal(labelTone('Needs work'), 'low')
+  assert.equal(unansweredCount(40, 32), 8)
+  assert.equal(unansweredCount(5, 9), 0)
+})
