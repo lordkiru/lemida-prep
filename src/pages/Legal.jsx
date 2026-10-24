@@ -48,6 +48,9 @@ export function Privacy() {
           your results.
         </li>
         <li>
+          <strong>Referrals:</strong> if you sign up through a referral link or code, this is recorded against the marketer who shared it.
+        </li>
+        <li>
           <strong>Technical information:</strong> when you use the app, our hosting records the address of your device (your IP address) and which page was asked
           for. We use this only to keep the service secure and to find and fix faults. It is kept by our hosting providers for a limited time.
         </li>

@@ -5,9 +5,12 @@ import CheckEmailPanel from '../../auth/CheckEmailPanel'
 import { cleanEmail, looksLikeEmail, passwordProblem } from '../../auth/rules'
 import Field, { PasswordField } from '../../components/Field'
 import Notice from '../../components/Notice'
+import { clearReferral, loadReferral, referralForSignup } from '../../referral'
 
 export default function Signup() {
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
+  // a code remembered from a ?ref= link fills the box; the student can change or clear it
+  const [remembered] = useState(() => loadReferral())
+  const [form, setForm] = useState({ name: '', email: '', password: '', referral: remembered })
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -35,7 +38,8 @@ export default function Signup() {
     setBusy(true)
     try {
       const email = cleanEmail(form.email)
-      await api.auth.signup({ name: form.name.trim(), email, password: form.password })
+      await api.auth.signup({ name: form.name.trim(), email, password: form.password, ...referralForSignup({ typed: form.referral, remembered }) })
+      clearReferral()
       setSentTo(email)
     } catch (err) {
       if (err.code === 'WEAK_PASSWORD') {
@@ -86,6 +90,18 @@ export default function Signup() {
           error={errors.password}
           hint="At least 8 characters. A few words with numbers works well."
           required
+        />
+        <Field
+          id="referral"
+          label="Referral code (optional)"
+          type="text"
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          maxLength={20}
+          value={form.referral}
+          onChange={set('referral')}
+          hint={remembered && form.referral === remembered ? 'Added from the link you used.' : 'If someone shared a code with you, enter it here.'}
         />
         <button type="submit" disabled={busy} className="btn-primary w-full">
           {busy ? 'Creating your account...' : 'Create account'}

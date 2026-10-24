@@ -68,7 +68,9 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
   // Sign-up, sign-in and the student's own account. Each returns the server's answer; failures throw an ApiError whose
   // `message` is plain English and whose `code` (BAD_CREDENTIALS, EMAIL_NOT_VERIFIED, WEAK_PASSWORD, BAD_TOKEN...) is for the code.
   const auth = {
-    signup: ({ name, email, password }) => send('POST', '/api/prep/auth/signup', { name, email, password }),
+    // referralCode / referralSource ('cookie' or 'manual_entry') are sent only when the student has one; the answer never says whether a code was real
+    signup: ({ name, email, password, referralCode, referralSource }) =>
+      send('POST', '/api/prep/auth/signup', { name, email, password, ...(referralCode ? { referralCode, referralSource } : {}) }),
     verifyEmail: (token) => send('POST', '/api/prep/auth/verify-email', { token }),
     resendVerification: (email) => send('POST', '/api/prep/auth/resend-verification', { email }),
     login: ({ email, password }) => send('POST', '/api/prep/auth/login', { email, password }),

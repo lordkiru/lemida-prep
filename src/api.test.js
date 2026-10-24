@@ -227,3 +227,16 @@ test('starting a mock sends the number of questions and minutes only when the st
   await api.mocks.start({ subject: 'Biology', minutes: 60 })
   assert.deepEqual(f.calls.map((c) => JSON.parse(c.options.body)), [{ subject: 'Biology' }, { subject: 'Biology', questions: 20, minutes: 30 }, { subject: 'Biology', minutes: 60 }])
 })
+
+test('sign-up sends a referral code and its source only when the student has one', async () => {
+  const f = fakeFetch(json(202, {}))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.auth.signup({ name: 'Ada', email: 'a@b.co', password: 'pw' })
+  await api.auth.signup({ name: 'Ada', email: 'a@b.co', password: 'pw', referralCode: 'FEST2026', referralSource: 'cookie' })
+  await api.auth.signup({ name: 'Ada', email: 'a@b.co', password: 'pw', referralSource: 'cookie' })
+  assert.deepEqual(f.calls.map((c) => JSON.parse(c.options.body)), [
+    { name: 'Ada', email: 'a@b.co', password: 'pw' },
+    { name: 'Ada', email: 'a@b.co', password: 'pw', referralCode: 'FEST2026', referralSource: 'cookie' },
+    { name: 'Ada', email: 'a@b.co', password: 'pw' },
+  ])
+})
