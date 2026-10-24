@@ -103,6 +103,12 @@ the server prints each email, link included, to its own log when `NODE_ENV` is n
 `/mocks` lists the student's subjects. A mock is a **timed paper in one subject: up to 40 questions in 45 minutes** (a subject with fewer ready questions gets a shorter
 paper with a proportionally shorter clock). The page shows the last and best score for each subject and the recent papers.
 
+- **The student chooses the length and the time.** Each subject card offers the number of questions (10, 20, 30, 40 up to what the subject has, and the biggest paper) and
+  the time in minutes, already filled in with the standard (67.5 seconds a question: 40 questions = 45 minutes). Quick choices (Tighter, Standard, More relaxed) or a typed
+  number work; the allowed range is shown in plain words (20 seconds to 5 minutes a question, never over 4 hours) and the server enforces the same rules. Starting with
+  nothing changed is the standard mock, as before. "Take another mock" repeats the same length and time. `src/practice/helpers.js` (`mockBounds`) must give the same
+  numbers as `server/modules/prep/mocks/timing.js` in the main repo.
+
 - **The server owns the clock.** The paper has an end time; the screen counts down from the seconds the server says are left, and asks the server again when the
   student comes back to the page. Leaving does not stop the clock. When it reaches zero the paper is handed in automatically with the answers saved so far,
   and a paper that ran out while the student was away is graded the next time anything looks at it.

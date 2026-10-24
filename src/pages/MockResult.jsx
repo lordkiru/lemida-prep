@@ -38,11 +38,12 @@ export default function MockResult() {
     }
   }, [mockId, navigate])
 
-  async function again(subject) {
+  // another paper of the same length and time (the server refuses it, with a plain message, if that is no longer possible)
+  async function again(subject, questions, seconds) {
     setBusy(true)
     setStartError('')
     try {
-      const data = await api.mocks.start({ subject })
+      const data = await api.mocks.start({ subject, questions, minutes: seconds && seconds % 60 === 0 ? seconds / 60 : undefined })
       navigate(`/mocks/${data.mock.id}`)
     } catch (err) {
       setStartError(err.message)
@@ -103,7 +104,7 @@ export default function MockResult() {
         )}
         {startError && <Notice kind="error" className="mt-4 text-left">{startError}</Notice>}
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-          <button type="button" className="btn-primary" disabled={busy} onClick={() => again(m.subject)}>
+          <button type="button" className="btn-primary" disabled={busy} onClick={() => again(m.subject, m.total, m.durationSeconds)}>
             {busy ? 'Starting...' : 'Take another mock'}
           </button>
           {wrong.length > 0 && (

@@ -103,3 +103,54 @@ test('badge tones for the score labels', () => {
   assert.equal(unansweredCount(40, 32), 8)
   assert.equal(unansweredCount(5, 9), 0)
 })
+
+import { clampMinutes, minutesProblem, mockBounds, questionChoices, timePresets } from './helpers.js'
+
+const TIMING = { minQuestions: 5, maxQuestions: 40, secondsPerQuestion: 67.5, minSecondsPerQuestion: 20, maxSecondsPerQuestion: 300, maxMinutes: 240 }
+
+test('the minutes a student may choose match the server\'s rules (the same numbers as server/modules/prep/mocks/timing.js)', () => {
+  assert.deepEqual(mockBounds(40, TIMING), { min: 14, max: 200, standard: 45 })
+  assert.deepEqual(mockBounds(20, TIMING), { min: 7, max: 100, standard: 23 })
+  assert.deepEqual(mockBounds(10, TIMING), { min: 4, max: 50, standard: 12 })
+  const big = mockBounds(100, TIMING)
+  assert.equal(big.max, 240, 'never over four hours')
+  for (const size of [1, 2, 5, 12, 40, 100]) {
+    const b = mockBounds(size, TIMING)
+    assert.ok(b.min >= 1 && b.min <= b.standard && b.standard <= b.max, `${size}: ${JSON.stringify(b)}`)
+  }
+})
+
+test('paper sizes offered: 10, 20, 30, 40 up to what the subject has, plus the biggest paper itself', () => {
+  assert.deepEqual(questionChoices(40, 5), [10, 20, 30, 40])
+  assert.deepEqual(questionChoices(12, 5), [10, 12])
+  assert.deepEqual(questionChoices(25, 5), [10, 20, 25])
+  assert.deepEqual(questionChoices(3, 5), [3], 'a small subject offers just what it has')
+  assert.deepEqual(questionChoices(8, 5), [8])
+  assert.deepEqual(questionChoices(0, 5), [])
+})
+
+test('a typed time is kept inside the allowed range, and nonsense becomes the standard', () => {
+  const b = mockBounds(40, TIMING)
+  assert.equal(clampMinutes(60, b), 60)
+  assert.equal(clampMinutes('60', b), 60)
+  assert.equal(clampMinutes(2, b), 14)
+  assert.equal(clampMinutes(900, b), 200)
+  assert.equal(clampMinutes(30.4, b), 30)
+  for (const bad of ['', 'abc', null, undefined, 0, -3, NaN]) assert.equal(clampMinutes(bad, b), 45, String(bad))
+})
+
+test('quick time choices: tighter, standard, more relaxed; always inside the range', () => {
+  assert.deepEqual(timePresets(mockBounds(40, TIMING)).map((p) => [p.key, p.minutes]), [['tight', 34], ['standard', 45], ['relaxed', 68]])
+  for (const size of [1, 3, 5, 20, 40, 100]) {
+    const b = mockBounds(size, TIMING)
+    for (const p of timePresets(b)) assert.ok(p.minutes >= b.min && p.minutes <= b.max, `${size} ${p.key}: ${p.minutes}`)
+  }
+})
+
+test('the typed time is checked and the allowed range is told in plain words', () => {
+  const b = mockBounds(40, TIMING)
+  assert.equal(minutesProblem('45', b), '')
+  assert.equal(minutesProblem(14, b), '')
+  assert.equal(minutesProblem(200, b), '')
+  for (const bad of [13, 201, '', 'abc', 45.5, 0]) assert.equal(minutesProblem(bad, b), 'Choose between 14 and 200 minutes.', String(bad))
+})

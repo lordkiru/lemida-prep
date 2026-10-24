@@ -218,3 +218,12 @@ test('mock calls: the right paths and methods, ids escaped, only the named field
   assert.deepEqual(JSON.parse(f.calls[3].options.body), { questionId: 'q1', chosenIndex: 2 })
   assert.deepEqual(JSON.parse(f.calls[4].options.body), { questionId: 'q1', chosenIndex: null })
 })
+
+test('starting a mock sends the number of questions and minutes only when the student chose them', async () => {
+  const f = fakeFetch(json(200, {}))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.mocks.start({ subject: 'Biology' })
+  await api.mocks.start({ subject: 'Biology', questions: 20, minutes: 30 })
+  await api.mocks.start({ subject: 'Biology', minutes: 60 })
+  assert.deepEqual(f.calls.map((c) => JSON.parse(c.options.body)), [{ subject: 'Biology' }, { subject: 'Biology', questions: 20, minutes: 30 }, { subject: 'Biology', minutes: 60 }])
+})

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import Notice from '../components/Notice'
-import { formatClock, labelTone, questionsLabel } from '../practice/helpers'
+import { clampMinutes, durationLabel, formatClock, labelTone, minutesProblem, mockBounds, questionChoices, questionsLabel, timePresets } from '../practice/helpers'
 
 const when = (iso) => {
   try {
@@ -10,6 +10,76 @@ const when = (iso) => {
   } catch {
     return ''
   }
+}
+
+const chipClass = (on) => `min-h-10 rounded-full border-[1.5px] px-4 text-sm font-semibold ${on ? 'border-accent bg-[var(--choice-on)] text-accent' : 'border-[var(--input-border)]'}`
+
+// What the student chooses before a paper starts: how many questions and how many minutes. The standard (the biggest paper at the standard pace)
+// is filled in, so one tap still starts a normal mock.
+function MockSetup({ subject, biggest, timing, busy, onStart }) {
+  const choices = questionChoices(biggest, timing.minQuestions)
+  const [size, setSize] = useState(biggest)
+  const bounds = mockBounds(size, timing)
+  const [typed, setTyped] = useState(null) // what the student typed; null = follow the standard for the chosen size
+  const minutes = typed === null ? String(bounds.standard) : typed
+  const problem = minutesProblem(minutes, bounds)
+  // on a very short paper two quick choices can land on the same number: show it once
+  const presets = timePresets(bounds).filter((p, i, all) => all.findIndex((q) => q.minutes === p.minutes) === i)
+  const id = `minutes-${subject.replace(/\W+/g, '-')}`
+
+  return (
+    <div className="grid gap-3">
+      {choices.length > 1 && (
+        <div role="group" aria-label={`Number of questions for ${subject}`}>
+          <p className="m-0 mb-2 text-sm font-semibold">Questions</p>
+          <div className="flex flex-wrap gap-2">
+            {choices.map((n) => (
+              <button key={n} type="button" aria-label={questionsLabel(n)} aria-pressed={size === n} className={chipClass(size === n)} onClick={() => {
+                  setSize(n)
+                  // a time the student typed stays while it still fits the new paper; otherwise the standard for it is used
+                  if (typed !== null && minutesProblem(typed, mockBounds(n, timing))) setTyped(null)
+                }}>
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div>
+        <label htmlFor={id} className="mb-2 block text-sm font-semibold">
+          Time in minutes
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            id={id}
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            className="field-input"
+            style={{ width: '6rem' }}
+            value={minutes}
+            aria-invalid={problem ? 'true' : undefined}
+            aria-describedby={`${id}-help`}
+            onChange={(e) => setTyped(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+            onBlur={() => {
+              if (problem) setTyped(String(clampMinutes(minutes, bounds)))
+            }}
+          />
+          {presets.map((p) => (
+            <button key={p.key} type="button" aria-pressed={Number(minutes) === p.minutes} className={chipClass(Number(minutes) === p.minutes)} onClick={() => setTyped(String(p.minutes))}>
+              {p.label} ({p.minutes})
+            </button>
+          ))}
+        </div>
+        <p id={`${id}-help`} className={`m-0 mt-2 text-xs ${problem ? 'font-semibold text-danger' : 'text-muted'}`} role={problem ? 'alert' : undefined}>
+          {problem || `Standard for ${questionsLabel(size)} is ${bounds.standard} minutes. You can choose ${bounds.min} to ${bounds.max}.`}
+        </p>
+      </div>
+      <button type="button" className="btn-primary" disabled={busy || Boolean(problem)} onClick={() => onStart({ questions: size, minutes: Number(minutes) === bounds.standard ? undefined : Number(minutes) })}>
+        {busy ? 'Starting...' : `Start mock exam (${questionsLabel(size)} · ${minutes} min)`}
+      </button>
+    </div>
+  )
 }
 
 // Mock exams: a timed paper in one subject. This page says what each paper is, shows the last and best scores, and lists recent papers.
@@ -31,11 +101,11 @@ export default function Mocks() {
     }
   }, [attempt])
 
-  async function start(subject) {
+  async function start(subject, choices) {
     setBusy(subject)
     setErrors((e) => ({ ...e, [subject]: '' }))
     try {
-      const data = await api.mocks.start({ subject })
+      const data = await api.mocks.start({ subject, ...choices })
       navigate(`/mocks/${data.mock.id}`)
     } catch (err) {
       setErrors((e) => ({ ...e, [subject]: err.message }))
@@ -101,9 +171,7 @@ export default function Mocks() {
                           Continue ({formatClock(s.active.secondsLeft)} left)
                         </Link>
                       ) : (
-                        <button type="button" className="btn-primary" disabled={busy === s.name} onClick={() => start(s.name)}>
-                          {busy === s.name ? 'Starting...' : 'Start mock exam'}
-                        </button>
+                        <MockSetup subject={s.name} biggest={s.questions} timing={state.data.timing} busy={busy === s.name} onStart={(choices) => start(s.name, choices)} />
                       )}
                     </div>
                   )}
@@ -121,7 +189,7 @@ export default function Mocks() {
                     <div>
                       <p className="m-0 font-bold">{h.subject}</p>
                       <p className="m-0 text-sm text-muted">
-                        {when(h.submittedAt)}
+                        {when(h.submittedAt)} · {h.total} questions{h.durationSeconds ? ` in ${durationLabel(h.durationSeconds)}` : ''}
                         {h.timedOut ? ' · handed in when time ran out' : ''}
                       </p>
                     </div>

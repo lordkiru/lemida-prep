@@ -104,7 +104,8 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
   // right answers come only with the result, after the paper is handed in or time runs out.
   const mocks = {
     list: () => request('/api/prep/mocks'),
-    start: ({ subject }) => send('POST', '/api/prep/mocks', { subject }),
+    // questions and minutes are the student's own choices; left out, a mock is the biggest paper at the standard pace
+    start: ({ subject, questions, minutes }) => send('POST', '/api/prep/mocks', { subject, ...(questions ? { questions } : {}), ...(minutes ? { minutes } : {}) }),
     get: (mockId) => request(`/api/prep/mocks/${enc(mockId)}`),
     // chosenIndex null takes the answer back
     saveAnswer: (mockId, { questionId, chosenIndex }) => send('PUT', `/api/prep/mocks/${enc(mockId)}/answer`, { questionId, chosenIndex }),

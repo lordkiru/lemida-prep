@@ -78,6 +78,49 @@ export function timeWarning(before, now) {
   return crossed === 60 ? 'One minute left.' : `${crossed / 60} minutes left.`
 }
 
+// ── choosing the length and the time of a mock ──
+// `timing` is what the API sends with the mocks list: { minQuestions, maxQuestions, secondsPerQuestion, minSecondsPerQuestion, maxSecondsPerQuestion, maxMinutes }.
+// These must give the same numbers as the server's rules (server/modules/prep/mocks/timing.js), which have the last word.
+
+// The minutes a student may choose for a paper of `size` questions, and the standard time
+export function mockBounds(size, timing) {
+  const min = Math.max(1, Math.ceil((size * timing.minSecondsPerQuestion) / 60))
+  const max = Math.min(timing.maxMinutes, Math.max(min, Math.floor((size * timing.maxSecondsPerQuestion) / 60)))
+  const standard = Math.min(max, Math.max(min, Math.ceil(Math.ceil(size * timing.secondsPerQuestion) / 60)))
+  return { min, max, standard }
+}
+
+// The paper sizes offered: 10, 20, 30, 40 up to what the subject can give, plus the biggest paper itself (a subject with 12 ready offers 10 and 12)
+export function questionChoices(biggest, minQuestions) {
+  if (biggest <= 0) return []
+  const sizes = new Set([10, 20, 30, 40].filter((n) => n >= Math.min(minQuestions, biggest) && n <= biggest))
+  sizes.add(biggest)
+  return [...sizes].sort((a, b) => a - b)
+}
+
+// Keeps a typed number of minutes inside the allowed range (a blank or rubbish entry becomes the standard)
+export function clampMinutes(value, bounds) {
+  const n = Math.round(Number(value))
+  if (!Number.isFinite(n) || n <= 0) return bounds.standard
+  return Math.min(bounds.max, Math.max(bounds.min, n))
+}
+
+// Quick choices: a tighter time (three quarters of standard), the standard, and a more relaxed one (half as long again), kept inside the bounds
+export function timePresets(bounds) {
+  const at = (factor) => clampMinutes(bounds.standard * factor, bounds)
+  return [
+    { key: 'tight', label: 'Tighter', minutes: at(0.75) },
+    { key: 'standard', label: 'Standard', minutes: bounds.standard },
+    { key: 'relaxed', label: 'More relaxed', minutes: at(1.5) },
+  ]
+}
+
+// Is the typed time acceptable as it stands?
+export const minutesProblem = (value, bounds) => {
+  const n = Number(value)
+  return Number.isInteger(n) && n >= bounds.min && n <= bounds.max ? '' : `Choose between ${bounds.min} and ${bounds.max} minutes.`
+}
+
 // The colour family of a score label, for the badge (words always come with it)
 export const labelTone = (label) => (label === 'Excellent' || label === 'Good' ? 'good' : label === 'Fair' ? 'fair' : 'low')
 
