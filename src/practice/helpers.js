@@ -83,17 +83,18 @@ export function timeWarning(before, now) {
 // These must give the same numbers as the server's rules (server/modules/prep/mocks/timing.js), which have the last word.
 
 // The minutes a student may choose for a paper of `size` questions, and the standard time
-export function mockBounds(size, timing) {
+// `pace` is the subject's standard (exam) seconds a question, which differs by subject; without it the general pace in `timing` is used
+export function mockBounds(size, timing, pace = timing.secondsPerQuestion) {
   const min = Math.max(1, Math.ceil((size * timing.minSecondsPerQuestion) / 60))
   const max = Math.min(timing.maxMinutes, Math.max(min, Math.floor((size * timing.maxSecondsPerQuestion) / 60)))
-  const standard = Math.min(max, Math.max(min, Math.ceil(Math.ceil(size * timing.secondsPerQuestion) / 60)))
+  const standard = Math.min(max, Math.max(min, Math.ceil(Math.ceil(size * pace) / 60)))
   return { min, max, standard }
 }
 
-// The paper sizes offered: 10, 20, 30, 40 up to what the subject can give, plus the biggest paper itself (a subject with 12 ready offers 10 and 12)
+// The paper sizes offered: 10, 20, 30 ... up to 80 and what the subject can give, plus the biggest paper itself (a subject with 12 ready offers 10 and 12)
 export function questionChoices(biggest, minQuestions) {
   if (biggest <= 0) return []
-  const sizes = new Set([10, 20, 30, 40].filter((n) => n >= Math.min(minQuestions, biggest) && n <= biggest))
+  const sizes = new Set([10, 20, 30, 40, 50, 60, 70, 80].filter((n) => n >= Math.min(minQuestions, biggest) && n <= biggest))
   sizes.add(biggest)
   return [...sizes].sort((a, b) => a - b)
 }
@@ -105,12 +106,12 @@ export function clampMinutes(value, bounds) {
   return Math.min(bounds.max, Math.max(bounds.min, n))
 }
 
-// Quick choices: a tighter time (three quarters of standard), the standard, and a more relaxed one (half as long again), kept inside the bounds
+// Quick choices: a tighter time (three quarters of the exam timing), the exam timing itself, and a more relaxed one (half as long again), kept inside the bounds
 export function timePresets(bounds) {
   const at = (factor) => clampMinutes(bounds.standard * factor, bounds)
   return [
     { key: 'tight', label: 'Tighter', minutes: at(0.75) },
-    { key: 'standard', label: 'Standard', minutes: bounds.standard },
+    { key: 'standard', label: 'Exam timing', minutes: bounds.standard },
     { key: 'relaxed', label: 'More relaxed', minutes: at(1.5) },
   ]
 }

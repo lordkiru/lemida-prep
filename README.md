@@ -104,7 +104,8 @@ the server prints each email, link included, to its own log when `NODE_ENV` is n
 paper with a proportionally shorter clock). The page shows the last and best score for each subject and the recent papers.
 
 - **The student chooses the length and the time.** Each subject card offers the number of questions (10, 20, 30, 40 up to what the subject has, and the biggest paper) and
-  the time in minutes, already filled in with the standard (67.5 seconds a question: 40 questions = 45 minutes). Quick choices (Tighter, Standard, More relaxed) or a typed
+  the time in minutes, already filled in with the **exam timing** for that subject: the pace of the real objective paper (for example Maths 90 minutes for 50 questions, English
+  60 minutes for 80, Biology 50 minutes), so any length gets the same pace. The card also says how long the real objective paper lasts. Quick choices (Tighter, Exam timing, More relaxed) or a typed
   number work; the allowed range is shown in plain words (20 seconds to 5 minutes a question, never over 4 hours) and the server enforces the same rules. Starting with
   nothing changed is the standard mock, as before. "Take another mock" repeats the same length and time. `src/practice/helpers.js` (`mockBounds`) must give the same
   numbers as `server/modules/prep/mocks/timing.js` in the main repo.

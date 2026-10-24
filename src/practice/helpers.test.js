@@ -122,6 +122,9 @@ test('the minutes a student may choose match the server\'s rules (the same numbe
 
 test('paper sizes offered: 10, 20, 30, 40 up to what the subject has, plus the biggest paper itself', () => {
   assert.deepEqual(questionChoices(40, 5), [10, 20, 30, 40])
+  assert.deepEqual(questionChoices(50, 5), [10, 20, 30, 40, 50])
+  assert.deepEqual(questionChoices(80, 5), [10, 20, 30, 40, 50, 60, 70, 80])
+  assert.deepEqual(questionChoices(71, 5), [10, 20, 30, 40, 50, 60, 70, 71])
   assert.deepEqual(questionChoices(12, 5), [10, 12])
   assert.deepEqual(questionChoices(25, 5), [10, 20, 25])
   assert.deepEqual(questionChoices(3, 5), [3], 'a small subject offers just what it has')
@@ -153,4 +156,13 @@ test('the typed time is checked and the allowed range is told in plain words', (
   assert.equal(minutesProblem(14, b), '')
   assert.equal(minutesProblem(200, b), '')
   for (const bad of [13, 201, '', 'abc', 45.5, 0]) assert.equal(minutesProblem(bad, b), 'Choose between 14 and 200 minutes.', String(bad))
+})
+
+test('each subject has its own exam pace: the full real paper gets exactly the real exam time', () => {
+  // Maths: 50 questions in 90 minutes = 108 seconds a question; English: 80 in 60 = 45 seconds
+  assert.deepEqual(mockBounds(50, TIMING, 108), { min: 17, max: 240, standard: 90 })
+  assert.deepEqual(mockBounds(80, TIMING, 45), { min: 27, max: 240, standard: 60 })
+  assert.equal(mockBounds(12, TIMING, 108).standard, 22)
+  assert.equal(mockBounds(12, TIMING).standard, 14, 'without a pace the general one is used')
+  assert.deepEqual(timePresets(mockBounds(50, TIMING, 108)).map((p) => [p.label, p.minutes]), [['Tighter', 68], ['Exam timing', 90], ['More relaxed', 135]])
 })

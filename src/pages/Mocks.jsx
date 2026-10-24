@@ -16,10 +16,10 @@ const chipClass = (on) => `min-h-10 rounded-full border-[1.5px] px-4 text-sm fon
 
 // What the student chooses before a paper starts: how many questions and how many minutes. The standard (the biggest paper at the standard pace)
 // is filled in, so one tap still starts a normal mock.
-function MockSetup({ subject, biggest, timing, busy, onStart }) {
+function MockSetup({ subject, biggest, timing, pace, exam, busy, onStart }) {
   const choices = questionChoices(biggest, timing.minQuestions)
   const [size, setSize] = useState(biggest)
-  const bounds = mockBounds(size, timing)
+  const bounds = mockBounds(size, timing, pace)
   const [typed, setTyped] = useState(null) // what the student typed; null = follow the standard for the chosen size
   const minutes = typed === null ? String(bounds.standard) : typed
   const problem = minutesProblem(minutes, bounds)
@@ -37,7 +37,7 @@ function MockSetup({ subject, biggest, timing, busy, onStart }) {
               <button key={n} type="button" aria-label={questionsLabel(n)} aria-pressed={size === n} className={chipClass(size === n)} onClick={() => {
                   setSize(n)
                   // a time the student typed stays while it still fits the new paper; otherwise the standard for it is used
-                  if (typed !== null && minutesProblem(typed, mockBounds(n, timing))) setTyped(null)
+                  if (typed !== null && minutesProblem(typed, mockBounds(n, timing, pace))) setTyped(null)
                 }}>
                 {n}
               </button>
@@ -72,7 +72,8 @@ function MockSetup({ subject, biggest, timing, busy, onStart }) {
           ))}
         </div>
         <p id={`${id}-help`} className={`m-0 mt-2 text-xs ${problem ? 'font-semibold text-danger' : 'text-muted'}`} role={problem ? 'alert' : undefined}>
-          {problem || `Standard for ${questionsLabel(size)} is ${bounds.standard} minutes. You can choose ${bounds.min} to ${bounds.max}.`}
+          {problem || `Exam timing for ${questionsLabel(size)} is ${bounds.standard} minutes. You can choose ${bounds.min} to ${bounds.max}.`}
+          {!problem && exam && exam.known ? ` The real exam's objective paper lasts ${exam.minutes} minutes.` : ''}
         </p>
       </div>
       <button type="button" className="btn-primary" disabled={busy || Boolean(problem)} onClick={() => onStart({ questions: size, minutes: Number(minutes) === bounds.standard ? undefined : Number(minutes) })}>
@@ -152,7 +153,7 @@ export default function Mocks() {
                     <>
                       <p className="m-0 text-sm text-muted">
                         {questionsLabel(s.questions)} · {s.minutes} minutes
-                        {s.questions < 40 ? ' (a shorter paper: more questions are on their way)' : ''}
+                        {s.questions < (s.exam ? s.exam.questions : 40) ? ' (a shorter paper: more questions are on their way)' : ''}
                       </p>
                       {s.taken > 0 && (
                         <p className="m-0 text-sm">
@@ -171,7 +172,7 @@ export default function Mocks() {
                           Continue ({formatClock(s.active.secondsLeft)} left)
                         </Link>
                       ) : (
-                        <MockSetup subject={s.name} biggest={s.questions} timing={state.data.timing} busy={busy === s.name} onStart={(choices) => start(s.name, choices)} />
+                        <MockSetup subject={s.name} biggest={s.questions} timing={state.data.timing} pace={s.secondsPerQuestion} exam={s.exam} busy={busy === s.name} onStart={(choices) => start(s.name, choices)} />
                       )}
                     </div>
                   )}
