@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import Notice from '../components/Notice'
+import { mockGate } from '../billing'
 import { clampMinutes, durationLabel, formatClock, labelTone, minutesProblem, mockBounds, questionChoices, questionsLabel, timePresets } from '../practice/helpers'
 
 const when = (iso) => {
@@ -102,6 +103,8 @@ export default function Mocks() {
     }
   }, [attempt])
 
+  const gate = mockGate(state.data && state.data.allowance)
+
   async function start(subject, choices) {
     setBusy(subject)
     setErrors((e) => ({ ...e, [subject]: '' }))
@@ -111,6 +114,8 @@ export default function Mocks() {
     } catch (err) {
       setErrors((e) => ({ ...e, [subject]: err.message }))
       setBusy('')
+      // the free allowance ran out since this page loaded (another tab, another device): load it again so the upgrade prompt shows
+      if (err.code === 'MOCK_LIMIT_REACHED') setAttempt((n) => n + 1)
     }
   }
 
@@ -140,6 +145,17 @@ export default function Mocks() {
 
       {state.status === 'ready' && (
         <>
+          {gate.blocked && (
+            <div className="glass mb-5 p-5" role="region" aria-label="Free mock exams used">
+              <Notice kind="info">
+                <strong>{gate.message}</strong> Choose a plan for unlimited mock exams. Practice stays free.
+              </Notice>
+              <Link to="/plans" className="btn-primary mt-4">
+                See plans
+              </Link>
+            </div>
+          )}
+          {gate.limited && !gate.blocked && <p className="mb-4 text-sm text-muted">{gate.message}</p>}
           <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2">
             {state.data.subjects.map((s) => {
               const ready = s.questions > 0
@@ -170,6 +186,10 @@ export default function Mocks() {
                       {s.active ? (
                         <Link to={`/mocks/${s.active.id}`} className="btn-primary">
                           Continue ({formatClock(s.active.secondsLeft)} left)
+                        </Link>
+                      ) : gate.blocked ? (
+                        <Link to="/plans" className="btn-secondary">
+                          Upgrade to start another
                         </Link>
                       ) : (
                         <MockSetup subject={s.name} biggest={s.questions} timing={state.data.timing} pace={s.secondsPerQuestion} exam={s.exam} busy={busy === s.name} onStart={(choices) => start(s.name, choices)} />

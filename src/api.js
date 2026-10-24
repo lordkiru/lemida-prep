@@ -115,7 +115,14 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     result: (mockId) => request(`/api/prep/mocks/${enc(mockId)}/result`),
   }
 
-  return { baseUrl: base, request, health, auth, me, practice, mocks, onSessionEnded }
+  // Plans and payment. initialize only asks for a Paystack payment page ({ authorizationUrl }); the plan switches on later, when Paystack tells the
+  // server the money arrived, and /api/prep/me then shows it.
+  const billing = {
+    plans: () => request('/api/prep/billing/plans'),
+    initialize: (plan) => send('POST', '/api/prep/billing/initialize', { plan }),
+  }
+
+  return { baseUrl: base, request, health, auth, me, practice, mocks, billing, onSessionEnded }
 }
 
 export const api = createApi({ baseUrl: import.meta.env?.VITE_API_URL })

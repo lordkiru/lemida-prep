@@ -10,6 +10,7 @@ import MockResult from './pages/MockResult'
 import Mocks from './pages/Mocks'
 import Mistakes from './pages/Mistakes'
 import { Privacy, Terms } from './pages/Legal'
+import Plans from './pages/Plans'
 import Practice from './pages/Practice'
 import PracticeSession from './pages/PracticeSession'
 import PracticeSummary from './pages/PracticeSummary'
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="mocks/:mockId" element={<MockExam />} />
             <Route path="mocks/:mockId/result" element={<MockResult />} />
             <Route path="mistakes" element={<Mistakes />} />
+            <Route path="plans" element={<Plans />} />
             <Route path="profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
