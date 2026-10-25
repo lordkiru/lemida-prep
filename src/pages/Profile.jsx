@@ -38,7 +38,7 @@ export default function Profile() {
     setDeleteError('')
     try {
       await api.me.deleteAccount(password)
-      endSession('Your account, and everything attached to it, has been deleted.')
+      endSession('Your account has been deleted: your profile, practice history and mock exams are gone. Payment records are kept for accounting purposes.')
       navigate('/login', { replace: true })
     } catch (err) {
       setDeleteError(err.message)
