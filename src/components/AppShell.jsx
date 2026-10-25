@@ -6,7 +6,7 @@ import { NAV_ITEMS } from '../navItems'
 
 // The layout around every page.
 //   Phone (under 1024px): a slim top bar with the logo, and a tab bar fixed to the bottom.
-//   PC (1024px and up):   a sidebar on the left with the logo, the same five items and the theme switch.
+//   PC (1024px and up):   a sidebar on the left with the logo, the same items and the theme switch.
 export default function AppShell() {
   return (
     <div className="min-h-screen">

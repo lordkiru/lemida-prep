@@ -89,7 +89,7 @@ export function Privacy() {
       <Ul>
         <li>If you never confirm your email address, the half-finished account is deleted automatically after 7 days.</li>
         <li>Otherwise we keep your account until you delete it.</li>
-        <li>When you delete your account, your account, setup, practice rounds and progress are deleted straight away. Copies in our backups disappear as the backups are replaced in the normal way.</li>
+        <li>When you delete your account, your profile, practice history and mock exams are deleted straight away. Payment records are kept for accounting purposes. Copies in our backups disappear as the backups are replaced in the normal way.</li>
       </Ul>
 
       <H>Your rights</H>

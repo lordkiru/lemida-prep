@@ -240,3 +240,25 @@ test('sign-up sends a referral code and its source only when the student has one
     { name: 'Ada', email: 'a@b.co', password: 'pw' },
   ])
 })
+
+// ── plans and payment ──
+test('billing calls: the plan list is a GET, paying is a POST that sends only the plan (the price is decided by the server)', async () => {
+  const f = fakeFetch(json(200, { authorizationUrl: 'https://checkout.paystack.com/x' }))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.billing.plans()
+  const paid = await api.billing.initialize('monthly')
+  assert.equal(f.calls[0].url, 'https://api.example.com/api/prep/billing/plans')
+  assert.equal(f.calls[0].options.method, undefined)
+  assert.equal(f.calls[1].url, 'https://api.example.com/api/prep/billing/initialize')
+  assert.equal(f.calls[1].options.method, 'POST')
+  assert.equal(f.calls[1].options.credentials, 'include')
+  assert.deepEqual(JSON.parse(f.calls[1].options.body), { plan: 'monthly' })
+  assert.equal(paid.authorizationUrl, 'https://checkout.paystack.com/x')
+})
+
+test('a failed payment start and the free-mock limit surface their codes, so the pages can react', async () => {
+  const down = createApi({ baseUrl: 'https://x.test', fetchImpl: fakeFetch(json(502, { error: 'We could not start the payment. Please try again.', code: 'PAYMENT_START_FAILED' })).impl })
+  await assert.rejects(down.billing.initialize('term'), (err) => err.status === 502 && err.code === 'PAYMENT_START_FAILED' && /could not start/.test(err.message))
+  const limited = createApi({ baseUrl: 'https://x.test', fetchImpl: fakeFetch(json(402, { error: 'You have used your 2 free mock exams for this week.', code: 'MOCK_LIMIT_REACHED' })).impl })
+  await assert.rejects(limited.mocks.start({ subject: 'Physics' }), (err) => err.status === 402 && err.code === 'MOCK_LIMIT_REACHED')
+})
