@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import Notice from '../components/Notice'
+import { practiceGate } from '../billing'
 import { ofLabel, questionsLabel, seenPercent } from '../practice/helpers'
 
 // Practice: the student's own subjects, how much of each they have seen, and a button to start or carry on.
@@ -32,6 +33,8 @@ export default function Practice() {
     } catch (err) {
       setErrors((e) => ({ ...e, [subject]: err.message }))
       setBusy('')
+      // today's free questions in this subject ran out since this page loaded (another tab or device): load the list again so the card says so
+      if (err.code === 'PRACTICE_LIMIT_REACHED') setAttempt((n) => n + 1)
     }
   }
 
@@ -68,6 +71,7 @@ export default function Practice() {
           {state.subjects.map((s) => {
             const ready = s.available > 0
             const percent = seenPercent(s.seen, s.available)
+            const gate = practiceGate(s.daily)
             return (
               <li key={s.name} className="glass flex flex-col gap-3 p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -83,7 +87,13 @@ export default function Practice() {
                     <div className="meter" role="progressbar" aria-label={`${s.name}: questions seen`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
                       <div className="meter-fill" style={{ width: `${percent}%` }} />
                     </div>
-                    {s.seen >= s.available && !s.active && <p className="m-0 text-sm font-semibold">You have seen every question here, so a new round is revision: we start with the ones you missed.</p>}
+                    {s.seen >= s.available && !s.active && !gate.blocked && <p className="m-0 text-sm font-semibold">You have seen every question here, so a new round is revision: we start with the ones you missed.</p>}
+                    {gate.limited && !gate.blocked && <p className="m-0 text-sm text-muted">{gate.message}</p>}
+                    {gate.blocked && (
+                      <Notice kind="info">
+                        <strong>{gate.message}</strong> {gate.detail}
+                      </Notice>
+                    )}
                   </>
                 ) : (
                   <p className="m-0 text-sm text-muted">We are still adding questions for this subject.</p>
@@ -91,7 +101,14 @@ export default function Practice() {
 
                 {errors[s.name] && <Notice kind="error">{errors[s.name]}</Notice>}
 
-                {ready && (
+                {ready && gate.blocked && (
+                  <div className="mt-auto flex flex-wrap items-center gap-3 pt-1">
+                    <Link to="/plans" className="btn-primary">
+                      See plans
+                    </Link>
+                  </div>
+                )}
+                {ready && !gate.blocked && (
                   <div className="mt-auto flex flex-wrap items-center gap-3 pt-1">
                     {s.active ? (
                       <>

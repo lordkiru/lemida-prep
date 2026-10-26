@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import Notice from '../components/Notice'
 import ReportQuestion from '../components/ReportQuestion'
+import { practiceGate } from '../billing'
 import { firstUnanswered, ofLabel, optionForKey, optionLetter } from '../practice/helpers'
 
 // One practice round: a question at a time. Choose an answer, see at once whether it was right and why, then go on.
@@ -17,6 +18,8 @@ export default function PracticeSession() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [daily, setDaily] = useState(null) // today's free questions left in this subject (null: a paid plan, or not known yet)
+  const [limitMessage, setLimitMessage] = useState('') // set when the server says today's free questions are used up
   const nextRef = useRef(null)
 
   useEffect(() => {
@@ -30,6 +33,7 @@ export default function PracticeSession() {
           return
         }
         setSession(s)
+        setDaily(s.daily || null)
         setQuestions(s.questions)
         setResults(Object.fromEntries(s.results.map((r) => [r.questionId, r])))
         setLoad({ status: 'ready', error: '' })
@@ -63,8 +67,12 @@ export default function PracticeSession() {
         const r = await api.practice.answer(sessionId, { questionId: current.id, chosenIndex })
         setResults((all) => ({ ...all, [current.id]: r }))
         setShowing(current.id)
+        if (r.daily) setDaily(r.daily)
       } catch (err) {
-        if (err.code === 'QUESTION_UNAVAILABLE') {
+        if (err.code === 'PRACTICE_LIMIT_REACHED') {
+          // the day's free questions in this subject are used up: this answer was not recorded; stay here and say so
+          setLimitMessage(err.message)
+        } else if (err.code === 'QUESTION_UNAVAILABLE') {
           // taken out of Exam Prep since the round began: drop it and carry on
           setNotice('A question was removed while you were practising. Moving on.')
           setQuestions((qs) => qs.filter((q) => q.id !== current.id))
@@ -148,6 +156,7 @@ export default function PracticeSession() {
     )
   }
 
+  const gate = practiceGate(daily)
   const answered = answeredList.filter((r) => questions.some((q) => q.id === r.questionId)).length
   const percent = Math.round((answered / questions.length) * 100)
 
@@ -172,7 +181,23 @@ export default function PracticeSession() {
       </div>
 
       {notice && <Notice kind="info" className="mb-4">{notice}</Notice>}
+      {gate.limited && !limitMessage && <p className="mb-3 mt-0 text-sm text-muted">{gate.message}</p>}
 
+      {limitMessage ? (
+        <div className="glass p-5 sm:p-7" role="region" aria-label="No free questions left today">
+          <Notice kind="info">
+            <strong>{limitMessage}</strong>
+          </Notice>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Link to="/plans" className="btn-primary">
+              See plans
+            </Link>
+            <Link to="/practice" className="btn-secondary">
+              Back to subjects
+            </Link>
+          </div>
+        </div>
+      ) : (
       <div className="glass p-5 sm:p-7">
         <h1 id="question-heading" className="mb-5 text-xl font-bold leading-snug">
           {current.text}
@@ -220,6 +245,7 @@ export default function PracticeSession() {
         {/* outside the live region above, so opening the form is not read out as news */}
         {result && <ReportQuestion key={current.id} questionId={current.id} className="mt-5" />}
       </div>
+      )}
 
       {answered > 0 && !result && (
         <p className="mt-4 text-sm">
