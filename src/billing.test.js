@@ -1,7 +1,7 @@
 // Run with:  npm test   (no browser, no server)
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { BEFORE_KEY, clearPlanBefore, formatNaira, isPaid, loadPlanBefore, mockGate, paymentConfirmed, planLine, rememberPlanBefore, returnedFromPaystack, termDeal } from './billing.js'
+import { BEFORE_KEY, clearPlanBefore, formatNaira, isPaid, loadPlanBefore, mockGate, paymentConfirmed, planFeatures, planLine, rememberPlanBefore, returnedFromPaystack, termDeal } from './billing.js'
 
 // a stand-in for the browser's storage
 const fakeStorage = (initial = {}) => {
@@ -90,14 +90,58 @@ test('the plan before paying is remembered for this tab only, and storage that i
   assert.equal(rememberPlanBefore({ planStatus: 'none' }, { storage: null }), false)
 })
 
+const NONE = { kind: null, limited: false, blocked: false, message: '', detail: '', actionLabel: '' }
+
 test('the free mock limit as the Mocks page words it', () => {
-  assert.deepEqual(mockGate(undefined), { limited: false, blocked: false, message: '' }, 'an older server that sends no allowance: no limit is shown')
-  assert.deepEqual(mockGate({ unlimited: true, allowed: true }), { limited: false, blocked: false, message: '' })
-  assert.deepEqual(mockGate({ unlimited: false, allowed: true, limit: 2, used: 0, remaining: 2 }), { limited: true, blocked: false, message: '2 free mock exams left this week.' })
-  assert.equal(mockGate({ unlimited: false, allowed: true, limit: 2, used: 1, remaining: 1 }).message, '1 free mock exam left this week.')
-  const blocked = mockGate({ unlimited: false, allowed: false, limit: 2, used: 2, remaining: 0, resetsAt: '2026-11-01T09:30:00.000Z' })
-  assert.equal(blocked.blocked, true)
-  assert.equal(blocked.limited, true)
+  assert.deepEqual(mockGate(undefined), NONE, 'an older server that sends no allowance: no limit is shown')
+  assert.deepEqual(mockGate({ unlimited: true, allowed: true }), NONE)
+  const some = mockGate({ kind: 'free', unlimited: false, allowed: true, limit: 2, used: 0, remaining: 2 })
+  assert.deepEqual([some.kind, some.limited, some.blocked, some.message], ['free', true, false, '2 free mock exams left this week.'])
+  assert.equal(mockGate({ kind: 'free', unlimited: false, allowed: true, limit: 2, used: 1, remaining: 1 }).message, '1 free mock exam left this week.')
+  const blocked = mockGate({ kind: 'free', unlimited: false, allowed: false, limit: 2, used: 2, remaining: 0, resetsAt: '2026-11-01T09:30:00.000Z' })
+  assert.deepEqual([blocked.kind, blocked.limited, blocked.blocked], ['free', true, true])
   assert.equal(blocked.message, 'You have used your 2 free mock exams for this week. Your next free one opens on 1 Nov 2026.')
-  assert.equal(mockGate({ unlimited: false, allowed: false, limit: 2, used: 2, remaining: 0, resetsAt: null }).message, 'You have used your 2 free mock exams for this week.')
+  assert.equal(blocked.actionLabel, 'Upgrade to start another', 'a free student is invited to choose a plan')
+  assert.match(blocked.detail, /Choose a plan/)
+  assert.equal(mockGate({ kind: 'free', unlimited: false, allowed: false, limit: 2, used: 2, remaining: 0, resetsAt: null }).message, 'You have used your 2 free mock exams for this week.')
+  assert.equal(mockGate({ unlimited: false, allowed: false, limit: 2, used: 2, remaining: 0 }).kind, 'free', 'an allowance with no kind is the free week (an older server)')
+})
+
+const plan = (over) => ({ kind: 'plan', unlimited: false, allowed: true, limit: 10, used: 3, remaining: 7, bonus: 0, includesReferralBonus: false, periodEndsAt: '2026-11-25T12:00:00.000Z', resetsAt: null, ...over })
+
+test('a paid student sees how many mock exams are left on their plan', () => {
+  const g = mockGate(plan({}))
+  assert.deepEqual([g.kind, g.limited, g.blocked, g.detail, g.actionLabel], ['plan', true, false, '', ''])
+  assert.equal(g.message, '7 of your 10 mock exams left on your plan.')
+  assert.equal(mockGate(plan({ limit: 10, used: 9, remaining: 1 })).message, '1 of your 10 mock exams left on your plan.')
+  assert.doesNotMatch(g.message, /free|week|upgrade/i, 'nothing about the free tier')
+})
+
+test('a referred student is told the count includes their bonus mocks', () => {
+  const g = mockGate(plan({ limit: 13, used: 3, remaining: 10, bonus: 3, includesReferralBonus: true }))
+  assert.equal(g.message, '10 of your 13 mock exams left on your plan. This includes 3 mock exams extra for being referred.')
+  assert.equal(mockGate(plan({ limit: 26, used: 0, remaining: 26, bonus: 6, includesReferralBonus: true })).message, '26 of your 26 mock exams left on your plan. This includes 6 mock exams extra for being referred.')
+  assert.doesNotMatch(mockGate(plan({})).message, /referred/, 'and not when it does not')
+})
+
+test('a paid student with no mock exams left is NOT told to upgrade: they are told what happened and that renewing gives a fresh set', () => {
+  const g = mockGate(plan({ allowed: false, used: 10, remaining: 0 }))
+  assert.deepEqual([g.kind, g.limited, g.blocked], ['plan', true, true])
+  assert.equal(g.message, 'You have used all 10 mock exams that came with your plan.')
+  assert.equal(g.detail, 'Practice is still unlimited, and your plan runs until 25 Nov 2026. Renewing your plan gives you a fresh set of mock exams.')
+  assert.equal(g.actionLabel, 'Renew to start another')
+  for (const text of [g.message, g.detail, g.actionLabel]) assert.doesNotMatch(text, /upgrade|free|choose a plan|week/i, text)
+  const referred = mockGate(plan({ limit: 13, allowed: false, used: 13, remaining: 0, bonus: 3, includesReferralBonus: true }))
+  assert.equal(referred.message, 'You have used all 13 mock exams that came with your plan. This includes 3 mock exams extra for being referred.')
+  assert.equal(mockGate(plan({ allowed: false, used: 10, remaining: 0, periodEndsAt: null })).detail, 'Practice is still unlimited. Renewing your plan gives you a fresh set of mock exams.')
+})
+
+test('what each plan card lists comes from the server: the quota, and the bonus for a referred student', () => {
+  const free = { mocksPerWeek: 2, windowDays: 7 }
+  const base = ['Unlimited practice, with an explanation for every question', 'Your Mistakes list, to learn from what you got wrong']
+  assert.deepEqual(planFeatures({ id: 'free' }, free), [...base, '2 mock exams a week'])
+  assert.deepEqual(planFeatures({ id: 'monthly', mockQuota: 10, referralBonusMocks: 3 }, free), [...base, '10 mock exams with this plan', '+3 extra mock exams if one of our marketers referred you'])
+  assert.deepEqual(planFeatures({ id: 'term', mockQuota: 20, referralBonusMocks: 6 }, free), [...base, '20 mock exams with this plan', '+6 extra mock exams if one of our marketers referred you'])
+  for (const p of [{ id: 'monthly', mockQuota: 10, referralBonusMocks: 3 }, { id: 'term', mockQuota: 20, referralBonusMocks: 6 }]) assert.ok(!planFeatures(p, free).join(' ').match(/unlimited mock/i), 'a paid plan no longer promises unlimited mocks')
+  assert.deepEqual(planFeatures({ id: 'monthly' }, free).slice(2), ['Mock exams'], 'an older server that sends no quota')
 })

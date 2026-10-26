@@ -3,14 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth/authContext'
 import Notice from '../components/Notice'
-import { POLL_EVERY_MS, POLL_FOR_MS, clearPlanBefore, formatNaira, isPaid, loadPlanBefore, paymentConfirmed, planLine, rememberPlanBefore, returnedFromPaystack, termDeal } from '../billing'
-
-// What each tier includes. The free tier's mock limit comes from the server (GET /billing/plans), so changing it there changes this page.
-const included = (planId, free) => {
-  const base = ['Unlimited practice, with an explanation for every question', 'Your Mistakes list, to learn from what you got wrong']
-  if (planId === 'free') return [...base, `${free.mocksPerWeek} mock exams a week`]
-  return [...base, 'Unlimited mock exams']
-}
+import { POLL_EVERY_MS, POLL_FOR_MS, clearPlanBefore, formatNaira, isPaid, loadPlanBefore, paymentConfirmed, planFeatures, planLine, rememberPlanBefore, returnedFromPaystack, termDeal } from '../billing'
 
 // The plans: Free, Monthly, and 3 months. Paying happens on Paystack's own page; the student comes back here, and this page waits for the server to
 // say the plan is active (it can take a few seconds) before it says so.
@@ -96,7 +89,7 @@ export default function Plans() {
       <h1 id="page-title" className="mb-1 text-2xl font-extrabold">
         Plans
       </h1>
-      <p className="mb-5 text-muted">Practice is free, always. Choose a plan when you want unlimited mock exams.</p>
+      <p className="mb-5 text-muted">Practice is free, always. Choose a plan when you want more mock exams.</p>
 
       {payment === 'waiting' && (
         <Notice kind="info" className="mb-5">
@@ -156,7 +149,7 @@ export default function Plans() {
                 </p>
                 {plan.id === 'term' && deal && <p className="m-0 text-sm text-muted">That is {formatNaira(deal.perMonth)} a month.</p>}
                 <ul className="m-0 grid list-none gap-2 p-0 text-sm">
-                  {included(plan.id, catalog.free).map((line) => (
+                  {planFeatures(plan, catalog.free).map((line) => (
                     <li key={line} className="flex gap-2">
                       <span aria-hidden="true" className="text-accent">✓</span>
                       <span>{line}</span>
@@ -180,7 +173,7 @@ export default function Plans() {
 
       {catalog.status === 'ready' && (
         <p className="mt-4 text-xs text-muted">
-          You pay on Paystack&apos;s secure page; we never see your card details. Renewing adds time after your current plan ends, so you lose nothing by paying early.
+          You pay on Paystack&apos;s secure page; we never see your card details. Renewing adds time after your current plan ends and gives you a fresh set of mock exams. Mock exams you have not used from your current plan do not carry over, so it is best to renew once you have used them.
         </p>
       )}
     </section>
