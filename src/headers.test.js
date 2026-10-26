@@ -66,7 +66,7 @@ test('the finished file keeps the cache rules and adds the security headers for 
 
 test('robots.txt keeps search engines out of the app and the one-time email pages', () => {
   const robots = fs.readFileSync(path.join(root, 'public', 'robots.txt'), 'utf8')
-  for (const p of ['/debug', '/setup', '/practice', '/profile', '/verify', '/reset']) assert.match(robots, new RegExp(`^Disallow: ${p}$`, 'm'), p)
+  for (const p of ['/debug', '/admin', '/setup', '/practice', '/profile', '/verify', '/reset']) assert.match(robots, new RegExp(`^Disallow: ${p}$`, 'm'), p)
   assert.doesNotMatch(robots, /^Disallow: \/$/m, 'the sign-in and information pages may still be found')
 })
 

@@ -122,7 +122,14 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     initialize: (plan) => send('POST', '/api/prep/billing/initialize', { plan }),
   }
 
-  return { baseUrl: base, request, health, auth, me, practice, mocks, billing, onSessionEnded }
+  // The admin page (/admin): the super admin signs in with the School Manager account (POST /auth/login) and reads the Prep overview with that token.
+  // Read-only: there is nothing here that changes anything.
+  const admin = {
+    login: ({ email, password }) => send('POST', '/auth/login', { email, password }),
+    overview: (token) => request('/superadmin/prep-admin/overview', { headers: { Authorization: `Bearer ${token}` } }),
+  }
+
+  return { baseUrl: base, request, health, auth, me, practice, mocks, billing, admin, onSessionEnded }
 }
 
 export const api = createApi({ baseUrl: import.meta.env?.VITE_API_URL })

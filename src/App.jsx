@@ -3,6 +3,7 @@ import AuthProvider from './auth/AuthProvider'
 import { GuestOnly, RequireAuth } from './auth/guards'
 import AppShell from './components/AppShell'
 import AuthLayout from './components/AuthLayout'
+import Admin from './pages/Admin'
 import Debug from './pages/Debug'
 import Home from './pages/Home'
 import MockExam from './pages/MockExam'
@@ -41,6 +42,9 @@ export default function App() {
           {/* hidden: not in the menu */}
           <Route path="debug" element={<Debug />} />
         </Route>
+
+        {/* the admin page: its own page with its own super-admin sign-in, not part of the student app (and not in the menu) */}
+        <Route path="admin" element={<Admin />} />
 
         {/* public, signed in or not */}
         <Route element={<AuthLayout wide />}>
