@@ -5,6 +5,8 @@ import AppShell from './components/AppShell'
 import AuthLayout from './components/AuthLayout'
 import Admin from './pages/Admin'
 import Debug from './pages/Debug'
+import Marketer from './pages/marketer/Marketer'
+import { MarketerForgot, MarketerSetPassword } from './pages/marketer/Password'
 import Home from './pages/Home'
 import MockExam from './pages/MockExam'
 import MockResult from './pages/MockResult'
@@ -45,6 +47,11 @@ export default function App() {
 
         {/* the admin page: its own page with its own super-admin sign-in, not part of the student app (and not in the menu) */}
         <Route path="admin" element={<Admin />} />
+
+        {/* the marketer's own pages: their own sign-in, not part of the student app (and not in its menu) */}
+        <Route path="marketer" element={<Marketer />} />
+        <Route path="marketer/set-password" element={<MarketerSetPassword />} />
+        <Route path="marketer/forgot" element={<MarketerForgot />} />
 
         {/* public, signed in or not */}
         <Route element={<AuthLayout wide />}>

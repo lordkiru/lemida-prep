@@ -129,7 +129,18 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
     overview: (token) => request('/superadmin/prep-admin/overview', { headers: { Authorization: `Bearer ${token}` } }),
   }
 
-  return { baseUrl: base, request, health, auth, me, practice, mocks, billing, admin, onSessionEnded }
+  // The marketer's own page (/marketer). Marketers have their own accounts and their own cookie, apart from the students'. Read-only apart from signing in,
+  // out, and choosing a password.
+  const marketer = {
+    login: ({ email, password }) => send('POST', '/api/prep/marketer/auth/login', { email, password }),
+    logout: () => send('POST', '/api/prep/marketer/auth/logout', {}),
+    forgotPassword: (email) => send('POST', '/api/prep/marketer/auth/forgot-password', { email }),
+    setPassword: ({ token, password }) => send('POST', '/api/prep/marketer/auth/set-password', { token, password }),
+    me: () => request('/api/prep/marketer/me'),
+    dashboard: () => request('/api/prep/marketer/dashboard'),
+  }
+
+  return { baseUrl: base, request, health, auth, me, practice, mocks, billing, admin, marketer, onSessionEnded }
 }
 
 export const api = createApi({ baseUrl: import.meta.env?.VITE_API_URL })
