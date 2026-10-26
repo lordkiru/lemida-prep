@@ -9,7 +9,7 @@ import ThemeToggle from '../../components/ThemeToggle'
 import { commissionStatusText, dateText, earnNote, nairaText, planName, shareMessage, stateText, walletCards } from '../../marketer/format'
 
 // The marketer's own page (/marketer): sign in, then see your referral link, how many students you brought, and what you have earned. READ-ONLY.
-// Marketers are not students: they have their own accounts, created by Lemida, and a student's sign-in never opens this page.
+// Marketers are not students: they have their own accounts (Lemida adds them, or they sign up at /marketer/signup), and a student's sign-in never opens this page.
 
 export function MarketerFrame({ children }) {
   return (
@@ -48,7 +48,7 @@ function SignIn({ onSignedIn, notice }) {
   return (
     <form onSubmit={submit} noValidate className="glass mx-auto grid w-full max-w-md gap-4 p-6">
       <h1 className="m-0 text-2xl font-extrabold">Marketer sign-in</h1>
-      <p className="m-0 text-sm text-muted">For Lemida Exam Prep marketers. Your account is set up by Lemida: look for the email with your link to choose a password.</p>
+      <p className="m-0 text-sm text-muted">For Lemida Exam Prep marketers. If Lemida set you up, look for the email with your link to choose a password.</p>
       {notice && <Notice kind="info">{notice}</Notice>}
       {error && <Notice kind="error">{error}</Notice>}
       <Field id="marketer-email" label="Email" type="email" autoComplete="username" value={form.email} onChange={set('email')} />
@@ -59,6 +59,12 @@ function SignIn({ onSignedIn, notice }) {
       <p className="m-0 text-sm">
         <Link to="/marketer/forgot" className="link font-semibold">
           Forgot your password?
+        </Link>
+      </p>
+      <p className="m-0 text-sm">
+        New here?{' '}
+        <Link to="/marketer/signup" className="link font-semibold">
+          Sign up as a marketer
         </Link>
       </p>
     </form>

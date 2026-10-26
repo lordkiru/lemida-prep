@@ -6,6 +6,7 @@ import AuthLayout from './components/AuthLayout'
 import Admin from './pages/Admin'
 import Debug from './pages/Debug'
 import Marketer from './pages/marketer/Marketer'
+import MarketerSignup from './pages/marketer/Signup'
 import { MarketerForgot, MarketerSetPassword } from './pages/marketer/Password'
 import Home from './pages/Home'
 import MockExam from './pages/MockExam'
@@ -50,6 +51,7 @@ export default function App() {
 
         {/* the marketer's own pages: their own sign-in, not part of the student app (and not in its menu) */}
         <Route path="marketer" element={<Marketer />} />
+        <Route path="marketer/signup" element={<MarketerSignup />} />
         <Route path="marketer/set-password" element={<MarketerSetPassword />} />
         <Route path="marketer/forgot" element={<MarketerForgot />} />
 

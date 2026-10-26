@@ -6,6 +6,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { ApiError, createApi } from '../api.js'
 import { commissionStatusText, earnNote, shareMessage, stateText, walletCards } from './format.js'
+import { PHONE_PATTERN, signupPayload, signupPitch, signupProblems } from './signup.js'
 
 const src = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const read = (...parts) => fs.readFileSync(path.join(src, ...parts), 'utf8')
@@ -74,7 +75,7 @@ test('the marketer calls: sign-in, sign-out, forgotten and chosen passwords are 
   assert.deepEqual(JSON.parse(f.calls[0].options.body), { email: 'm@example.com', password: 'pw' })
   assert.deepEqual(JSON.parse(f.calls[3].options.body), { token: 'tok', password: 'pw2' })
   for (const c of f.calls) assert.equal(c.options.credentials, 'include', 'the sign-in is a cookie')
-  assert.deepEqual(Object.keys(api.marketer).sort(), ['dashboard', 'forgotPassword', 'login', 'logout', 'me', 'setPassword'], 'nothing that changes a marketer\'s money or details')
+  assert.deepEqual(Object.keys(api.marketer).sort(), ['dashboard', 'forgotPassword', 'login', 'logout', 'me', 'rules', 'setPassword', 'signUp'], 'nothing that changes a marketer\'s money or details')
 })
 
 test('a marketer whose session ended elsewhere does NOT sign a student out: it has its own code', async () => {
@@ -118,4 +119,57 @@ test('a password link is taken out of the address bar as soon as it has been rea
   const page = read('pages', 'marketer', 'Password.jsx')
   assert.match(page, /navigate\(location\.pathname, \{ replace: true \}\)/)
   assert.match(page, /params\.get\('token'\)/)
+})
+
+// ---------- signing up as a marketer ----------
+
+test('the sign-up form says what is wrong with each field, and accepts a normal phone number written any usual way', () => {
+  assert.deepEqual(signupProblems({ name: 'Ada Okafor', email: 'ada@example.com', phone: '08012345678' }), {})
+  for (const phone of ['0801 234 5678', '+234 801 234 5678', '(0801) 234-5678', '1234567']) assert.ok(PHONE_PATTERN.test(phone), phone)
+  const p = signupProblems({ name: 'A', email: 'nope', phone: '12' })
+  assert.deepEqual(Object.keys(p).sort(), ['email', 'name', 'phone'])
+  assert.match(p.phone, /7 to 20 digits/)
+  assert.deepEqual(Object.keys(signupProblems({})).sort(), ['email', 'name', 'phone'], 'an empty form')
+  assert.ok(signupProblems({ name: 'x'.repeat(101), email: 'a@b.co', phone: '08012345678' }).name)
+  assert.deepEqual(Object.keys(signupProblems({ name: 'Ada', email: 'ada@example.com', phone: 'call me' })), ['phone'])
+})
+
+test('only the name, email and phone are sent, tidied up', () => {
+  assert.deepEqual(signupPayload({ name: '  Ada Okafor ', email: ' ADA@Example.com ', phone: ' 0801 234 5678 ', referralCode: 'MINE2026', status: 'active' }), { name: 'Ada Okafor', email: 'ada@example.com', phone: '0801 234 5678' })
+})
+
+test('the sign-up page quotes the server\'s numbers, and says nothing about earnings if it does not have them', () => {
+  const pitch = signupPitch(RULES)
+  assert.match(pitch, /₦300 each time a student you referred pays for the Monthly plan/)
+  assert.match(pitch, /₦500 for the 3-month plan/)
+  assert.match(pitch, /held for 5 days/)
+  assert.match(pitch, /Withdrawals are not open yet/)
+  assert.equal(signupPitch(undefined), '')
+  assert.equal(signupPitch({}), '')
+})
+
+test('signing up and reading the rules are plain calls: no cookie needed, and only the three details are posted', async () => {
+  const f = recorder(json(202, { message: 'Check your email to finish creating your marketer account.' }))
+  const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl })
+  await api.marketer.signUp({ name: 'Ada', email: 'ada@example.com', phone: '0801', status: 'active', referralCode: 'X' })
+  await api.marketer.rules()
+  assert.equal(f.calls[0].url, 'https://api.example.com/api/prep/marketer/auth/signup')
+  assert.equal(f.calls[0].options.method, 'POST')
+  assert.deepEqual(JSON.parse(f.calls[0].options.body), { name: 'Ada', email: 'ada@example.com', phone: '0801' })
+  assert.equal(f.calls[1].url, 'https://api.example.com/api/prep/marketer/rules')
+})
+
+test('the sign-up page is its own public route, linked from the sign-in page, and kept out of search engines like the rest', () => {
+  const app = read('App.jsx')
+  assert.match(app, /<Route path="marketer\/signup" element={<MarketerSignup \/>} \/>/)
+  assert.ok(app.indexOf('path="marketer/signup"') < app.indexOf('<RequireAuth />'), 'outside the signed-in student routes')
+  assert.match(read('pages', 'marketer', 'Marketer.jsx'), /<Link to="\/marketer\/signup"/)
+  assert.match(fs.readFileSync(path.join(src, '..', 'public', 'robots.txt'), 'utf8'), /^Disallow: \/marketer$/m, 'one rule covers /marketer/signup too')
+})
+
+test('the sign-up page calls only sign-up and the rules, and sends nobody to a page they cannot open', () => {
+  const page = read('pages', 'marketer', 'Signup.jsx')
+  assert.doesNotMatch(page, /api\.marketer\.(?!signUp|rules)/)
+  assert.doesNotMatch(page, /api\.(me|auth|billing|admin|mocks|practice)\b/)
+  assert.match(page, /sign-up is removed after a week/, 'says what happens if the link is never used')
 })
