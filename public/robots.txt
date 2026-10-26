@@ -2,6 +2,7 @@
 User-agent: *
 Allow: /
 Disallow: /debug
+Disallow: /admin
 Disallow: /setup
 Disallow: /practice
 Disallow: /profile
