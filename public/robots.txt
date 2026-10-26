@@ -3,6 +3,7 @@ User-agent: *
 Allow: /
 Disallow: /debug
 Disallow: /admin
+Disallow: /marketer
 Disallow: /setup
 Disallow: /practice
 Disallow: /profile
