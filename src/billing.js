@@ -102,18 +102,52 @@ export function paymentConfirmed(before, user) {
 export const POLL_EVERY_MS = 3000
 export const POLL_FOR_MS = 60000
 
-// ---- the free limit on mock exams ----
-// `allowance` is what GET /api/prep/mocks returns: { unlimited, allowed, limit, used, remaining, resetsAt }
+// ---- how many mock exams a student may still start ----
+// 'allowance' is what GET /api/prep/mocks returns. Two kinds:
+//   kind 'free': { limit, used, remaining, allowed, resetsAt }   the free tier's mocks in any week
+//   kind 'plan': { limit, used, remaining, allowed, bonus, includesReferralBonus, periodEndsAt }   the mocks that came with the plan they paid for
+// Returns what the Mocks page needs: { kind, limited, blocked, message, detail, actionLabel }.
+const mocksText = (n) => n + ' mock exam' + (n === 1 ? '' : 's')
+
 export function mockGate(allowance) {
-  if (!allowance || allowance.unlimited) return { limited: false, blocked: false, message: '' }
+  if (!allowance || allowance.unlimited) return { kind: null, limited: false, blocked: false, message: '', detail: '', actionLabel: '' }
+
+  if (allowance.kind === 'plan') {
+    const bonusNote = allowance.includesReferralBonus && allowance.bonus > 0 ? ' This includes ' + mocksText(allowance.bonus) + ' extra for being referred.' : ''
+    if (allowance.allowed) {
+      return { kind: 'plan', limited: true, blocked: false, message: allowance.remaining + ' of your ' + mocksText(allowance.limit) + ' left on your plan.' + bonusNote, detail: '', actionLabel: '' }
+    }
+    const until = allowance.periodEndsAt ? formatDate(allowance.periodEndsAt) : ''
+    return {
+      kind: 'plan',
+      limited: true,
+      blocked: true,
+      message: 'You have used all ' + mocksText(allowance.limit) + ' that came with your plan.' + bonusNote,
+      detail: 'Practice is still unlimited' + (until ? ', and your plan runs until ' + until : '') + '. Renewing your plan gives you a fresh set of mock exams.',
+      actionLabel: 'Renew to start another',
+    }
+  }
+
   if (allowance.allowed) {
     const left = allowance.remaining
-    return { limited: true, blocked: false, message: `${left} free mock exam${left === 1 ? '' : 's'} left this week.` }
+    return { kind: 'free', limited: true, blocked: false, message: left + ' free mock exam' + (left === 1 ? '' : 's') + ' left this week.', detail: '', actionLabel: '' }
   }
   const when = allowance.resetsAt ? formatDate(allowance.resetsAt) : ''
   return {
+    kind: 'free',
     limited: true,
     blocked: true,
-    message: `You have used your ${allowance.limit} free mock exams for this week.${when ? ` Your next free one opens on ${when}.` : ''}`,
+    message: 'You have used your ' + allowance.limit + ' free mock exams for this week.' + (when ? ' Your next free one opens on ' + when + '.' : ''),
+    detail: 'Choose a plan for more mock exams. Practice stays free.',
+    actionLabel: 'Upgrade to start another',
   }
+}
+
+// What each plan card lists. The numbers come from the server (GET /api/prep/billing/plans), so changing them there changes this page.
+export function planFeatures(plan, free) {
+  const base = ['Unlimited practice, with an explanation for every question', 'Your Mistakes list, to learn from what you got wrong']
+  if (!plan || plan.id === 'free') return [...base, (free && free.mocksPerWeek ? free.mocksPerWeek : 2) + ' mock exams a week']
+  const mocks = plan.mockQuota ? mocksText(plan.mockQuota) + ' with this plan' : 'Mock exams'
+  const bonus = plan.mockQuota && plan.referralBonusMocks ? ['+' + plan.referralBonusMocks + ' extra mock exams if one of our marketers referred you'] : []
+  return [...base, mocks, ...bonus]
 }

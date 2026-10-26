@@ -146,12 +146,12 @@ export default function Mocks() {
       {state.status === 'ready' && (
         <>
           {gate.blocked && (
-            <div className="glass mb-5 p-5" role="region" aria-label="Free mock exams used">
+            <div className="glass mb-5 p-5" role="region" aria-label="No mock exams left">
               <Notice kind="info">
-                <strong>{gate.message}</strong> Choose a plan for unlimited mock exams. Practice stays free.
+                <strong>{gate.message}</strong> {gate.detail}
               </Notice>
               <Link to="/plans" className="btn-primary mt-4">
-                See plans
+                {gate.kind === 'plan' ? 'Renew your plan' : 'See plans'}
               </Link>
             </div>
           )}
@@ -189,7 +189,7 @@ export default function Mocks() {
                         </Link>
                       ) : gate.blocked ? (
                         <Link to="/plans" className="btn-secondary">
-                          Upgrade to start another
+                          {gate.actionLabel}
                         </Link>
                       ) : (
                         <MockSetup subject={s.name} biggest={s.questions} timing={state.data.timing} pace={s.secondsPerQuestion} exam={s.exam} busy={busy === s.name} onStart={(choices) => start(s.name, choices)} />
