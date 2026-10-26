@@ -143,11 +143,40 @@ export function mockGate(allowance) {
   }
 }
 
+// ---- how many practice questions a free student may still answer today, in one subject ----
+// 'daily' is what the practice routes return: { kind, unlimited, allowed, limit, used, remaining, resetsAt }. A paid plan is unlimited.
+// Returns { limited, blocked, message, detail }.
+const questionsText = (n) => n + ' free practice question' + (n === 1 ? '' : 's')
+
+export function practiceGate(daily) {
+  if (!daily || daily.unlimited) return { limited: false, blocked: false, message: '', detail: '' }
+  if (daily.allowed) {
+    return { limited: true, blocked: false, message: daily.remaining + ' of your ' + questionsText(daily.limit) + ' left today in this subject.', detail: '' }
+  }
+  return {
+    limited: true,
+    blocked: true,
+    message: 'You have used your ' + questionsText(daily.limit) + ' in this subject for today.',
+    detail: 'They come back tomorrow, and your other subjects have their own. Choose a plan for unlimited practice.',
+  }
+}
+
+// The line at the top of the Plans page: what you get for free, then what a plan changes. The numbers come from the server.
+export function freeIntro(free) {
+  const practice = free && free.practicePerSubjectPerDay ? free.practicePerSubjectPerDay : 10
+  const mocks = free && free.mocksPerWeek ? free.mocksPerWeek : 2
+  return 'Start free: ' + practice + ' practice questions a day in each subject and ' + mocks + ' mock exams a week. A plan gives you unlimited practice and more mock exams.'
+}
+
 // What each plan card lists. The numbers come from the server (GET /api/prep/billing/plans), so changing them there changes this page.
 export function planFeatures(plan, free) {
-  const base = ['Unlimited practice, with an explanation for every question', 'Your Mistakes list, to learn from what you got wrong']
-  if (!plan || plan.id === 'free') return [...base, (free && free.mocksPerWeek ? free.mocksPerWeek : 2) + ' mock exams a week']
+  const explained = 'with an explanation for every question'
+  const mistakes = 'Your Mistakes list, to learn from what you got wrong'
+  if (!plan || plan.id === 'free') {
+    const practice = free && free.practicePerSubjectPerDay ? free.practicePerSubjectPerDay : 10
+    return [practice + ' practice questions a day in each subject, ' + explained, mistakes, (free && free.mocksPerWeek ? free.mocksPerWeek : 2) + ' mock exams a week']
+  }
   const mocks = plan.mockQuota ? mocksText(plan.mockQuota) + ' with this plan' : 'Mock exams'
   const bonus = plan.mockQuota && plan.referralBonusMocks ? ['+' + plan.referralBonusMocks + ' extra mock exams if one of our marketers referred you'] : []
-  return [...base, mocks, ...bonus]
+  return ['Unlimited practice, ' + explained, mistakes, mocks, ...bonus]
 }

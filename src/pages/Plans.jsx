@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth/authContext'
 import Notice from '../components/Notice'
-import { POLL_EVERY_MS, POLL_FOR_MS, clearPlanBefore, formatNaira, isPaid, loadPlanBefore, paymentConfirmed, planFeatures, planLine, rememberPlanBefore, returnedFromPaystack, termDeal } from '../billing'
+import { POLL_EVERY_MS, POLL_FOR_MS, clearPlanBefore, formatNaira, isPaid, loadPlanBefore, paymentConfirmed, freeIntro, planFeatures, planLine, rememberPlanBefore, returnedFromPaystack, termDeal } from '../billing'
 
 // The plans: Free, Monthly, and 3 months. Paying happens on Paystack's own page; the student comes back here, and this page waits for the server to
 // say the plan is active (it can take a few seconds) before it says so.
@@ -11,7 +11,7 @@ export default function Plans() {
   const { user, setUser } = useAuth()
   const navigate = useNavigate()
   const [search] = useSearchParams()
-  const [catalog, setCatalog] = useState({ status: 'loading', plans: [], free: { mocksPerWeek: 2 }, error: '' })
+  const [catalog, setCatalog] = useState({ status: 'loading', plans: [], free: { mocksPerWeek: 2, practicePerSubjectPerDay: 10 }, error: '' })
   const [attempt, setAttempt] = useState(0)
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
@@ -23,7 +23,7 @@ export default function Plans() {
     api.billing
       .plans()
       .then((data) => !cancelled && setCatalog({ status: 'ready', plans: data.plans, free: data.free, error: '' }))
-      .catch((err) => !cancelled && setCatalog({ status: 'error', plans: [], free: { mocksPerWeek: 2 }, error: err.message }))
+      .catch((err) => !cancelled && setCatalog({ status: 'error', plans: [], free: { mocksPerWeek: 2, practicePerSubjectPerDay: 10 }, error: err.message }))
     return () => {
       cancelled = true
     }
@@ -89,7 +89,7 @@ export default function Plans() {
       <h1 id="page-title" className="mb-1 text-2xl font-extrabold">
         Plans
       </h1>
-      <p className="mb-5 text-muted">Practice is free, always. Choose a plan when you want more mock exams.</p>
+      <p className="mb-5 text-muted">{freeIntro(catalog.free)}</p>
 
       {payment === 'waiting' && (
         <Notice kind="info" className="mb-5">
