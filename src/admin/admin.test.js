@@ -79,9 +79,10 @@ test('signing in is the School Manager login; the overview is a GET that carries
   assert.equal(f.calls[1].options.cache, 'no-store')
 })
 
-test('the admin API is read-only: a sign-in and one overview, nothing that writes', () => {
+test('the admin API: a sign-in, the read-only overview, and the marketers (create, list, invite) - nothing that touches money', () => {
   const api = createApi({ baseUrl: 'https://api.example.com', fetchImpl: async () => json(200, {}) })
-  assert.deepEqual(Object.keys(api.admin).sort(), ['login', 'overview'])
+  assert.deepEqual(Object.keys(api.admin).sort(), ['login', 'marketers', 'overview'])
+  assert.deepEqual(Object.keys(api.admin.marketers).sort(), ['create', 'list', 'sendInvite'])
 })
 
 test('a refused overview says why: 401 when the sign-in has run out, 403 for an account that is not the super admin', async () => {

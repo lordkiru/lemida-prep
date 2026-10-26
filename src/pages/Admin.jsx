@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import { clearAdminSession, isSuperAdmin, loadAdminSession, saveAdminSession } from '../admin/adminSession'
 import { dateText, dateTimeText, nairaText, planName, statusName, summaryCards } from '../admin/format'
+import AdminMarketers from './AdminMarketers'
 import Brand from '../components/Brand'
 import Field, { PasswordField } from '../components/Field'
 import Notice from '../components/Notice'
@@ -94,7 +95,7 @@ function Dashboard({ session, onSignOut }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="m-0 text-2xl font-extrabold">Exam Prep admin</h1>
-          <p className="m-0 text-sm text-muted">Signed in as {session.email || session.name}. Read-only.</p>
+          <p className="m-0 text-sm text-muted">Signed in as {session.email || session.name}. Payments and students are read-only; you can create marketers below.</p>
         </div>
         <div className="flex gap-2">
           <button type="button" className="btn-secondary" onClick={reload} disabled={state.status === 'loading'}>
@@ -198,6 +199,7 @@ function Dashboard({ session, onSignOut }) {
               </div>
             )}
           </section>
+          <AdminMarketers token={session.token} onEnded={onSignOut} />
           <p className="m-0 text-xs text-muted">Revenue adds up the amounts customers paid, including any Paystack charge passed on to them. Dates are in Nigerian time.</p>
         </>
       )}

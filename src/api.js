@@ -123,10 +123,18 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
   }
 
   // The admin page (/admin): the super admin signs in with the School Manager account (POST /auth/login) and reads the Prep overview with that token.
-  // Read-only: there is nothing here that changes anything.
+  // Reads the payments and students (read-only), and creates marketers and sends their invites.
   const admin = {
     login: ({ email, password }) => send('POST', '/auth/login', { email, password }),
     overview: (token) => request('/superadmin/prep-admin/overview', { headers: { Authorization: `Bearer ${token}` } }),
+    // Marketers: create one (the server emails them a link to choose a password), list them, send an invite again. Nothing else: no wallets, no money.
+    marketers: {
+      list: (token) => request('/superadmin/prep-marketers', { headers: { Authorization: `Bearer ${token}` } }),
+      create: (token, { name, email, phone }) =>
+        request('/superadmin/prep-marketers', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, phone }) }),
+      sendInvite: (token, marketerId) =>
+        request(`/superadmin/prep-marketers/${enc(marketerId)}/invite`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: '{}' }),
+    },
   }
 
   // The marketer's own page (/marketer). Marketers have their own accounts and their own cookie, apart from the students'. Read-only apart from signing in,
