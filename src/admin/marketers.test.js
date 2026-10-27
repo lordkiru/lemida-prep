@@ -5,7 +5,7 @@ import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { createApi } from '../api.js'
-import { PHONE_PATTERN, createdMessage, earnedText, inviteMessage, marketerFormProblems, marketerPayload, marketerProgress, marketerStatusText } from './marketers.js'
+import { PHONE_PATTERN, createdMessage, earnedText, inviteMessage, marketerFormProblems, marketerPayload, marketerProgress, marketerStatusText, inviteButton, statusSwitch, switchMessage } from './marketers.js'
 
 const src = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const read = (...parts) => fs.readFileSync(path.join(src, ...parts), 'utf8')
@@ -54,8 +54,24 @@ test('the list says who has got started: no password yet, password chosen, or si
   assert.equal(marketerProgress(undefined), '')
   assert.equal(marketerStatusText({ status: 'active' }), 'Active')
   assert.equal(marketerStatusText({ status: 'suspended' }), 'Suspended')
+  assert.equal(marketerStatusText({ status: 'pending' }), 'Waiting to confirm email')
+  assert.equal(marketerProgress({ status: 'pending', passwordSet: false }), 'Signed up, has not confirmed their email')
   assert.equal(earnedText({ totalEarned: 1100 }), '₦1,100')
   assert.equal(earnedText(undefined), '₦0')
+})
+
+test('the switch: active can be suspended, suspended can be switched back on, and a marketer who has not confirmed has none', () => {
+  assert.deepEqual(statusSwitch({ status: 'active' }), { next: 'suspended', label: 'Suspend' })
+  assert.deepEqual(statusSwitch({ status: 'suspended' }), { next: 'active', label: 'Switch back on' })
+  for (const other of [{ status: 'pending' }, { status: 'odd' }, {}, null, undefined]) assert.equal(statusSwitch(other), null, JSON.stringify(other))
+  assert.match(switchMessage({ name: 'Ada' }, 'suspended'), /Ada is suspended: they cannot sign in/)
+  assert.equal(switchMessage({ name: 'Ada' }, 'active'), 'Ada is switched back on.')
+})
+
+test('the email button: worded for what is sent, and off for a suspended marketer only', () => {
+  assert.deepEqual(inviteButton({ status: 'active' }), { disabled: false, label: 'Send invite again' })
+  assert.deepEqual(inviteButton({ status: 'pending' }), { disabled: false, label: 'Send link again' })
+  assert.equal(inviteButton({ status: 'suspended' }).disabled, true)
 })
 
 // ---------- the calls ----------
@@ -77,6 +93,15 @@ test('create, list and invite are the super admin\'s calls: each carries the tok
   assert.deepEqual(JSON.parse(f.calls[1].options.body), { name: 'Ada', email: 'ada@example.com', phone: '0801' })
 })
 
+test('switching a marketer is a PATCH that carries the token and only the status', async () => {
+  const f = recorder(json(200, {}))
+  await createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl }).admin.marketers.setStatus('tok-1', '64b000000000000000000001', 'suspended')
+  assert.equal(f.calls[0].url, 'https://api.example.com/superadmin/prep-marketers/64b000000000000000000001/status')
+  assert.equal(f.calls[0].options.method, 'PATCH')
+  assert.equal(f.calls[0].options.headers.Authorization, 'Bearer tok-1')
+  assert.deepEqual(JSON.parse(f.calls[0].options.body), { status: 'suspended' })
+})
+
 test('a marketer id in the address is escaped', async () => {
   const f = recorder(json(200, {}))
   await createApi({ baseUrl: 'https://api.example.com', fetchImpl: f.impl }).admin.marketers.sendInvite('t', 'a/b?c')
@@ -92,17 +117,17 @@ test('a refused create says why: an email that is already a marketer (409) or a 
 
 // ---------- what the section does and does not do ----------
 
-test('the Marketers section creates, lists and invites: no button for money, wallets or deleting', () => {
+test('the Marketers section creates, lists, invites and switches off or on: no button for money, wallets or deleting', () => {
   const section = read('pages', 'AdminMarketers.jsx')
-  assert.doesNotMatch(section, /api\.admin\.(?!marketers\.(list|create|sendInvite))/, 'only the three marketer calls')
+  assert.doesNotMatch(section, /api\.admin\.(?!marketers\.(list|create|sendInvite|setStatus))/, 'only the four marketer calls')
   assert.doesNotMatch(section, /api\.(me|auth|billing|mocks|practice|marketer)\b/, 'nothing from the student or marketer side')
   const labels = [...section.matchAll(/<button[^>]*>\s*([^<{]*?)\s*(?:<|\{)/g)].map((m) => m[1]).filter(Boolean)
   assert.ok(labels.includes('Create marketer') || section.includes("'Create marketer'"))
-  for (const label of labels) assert.doesNotMatch(label, /withdraw|delete|remove|refund|pay out|approve|suspend|wallet/i, label)
+  for (const label of labels) assert.doesNotMatch(label, /withdraw|delete|remove|refund|pay out|approve|wallet/i, label)
 })
 
 test('the admin page shows the section, and says what it can and cannot do', () => {
   const page = read('pages', 'Admin.jsx')
   assert.match(page, /<AdminMarketers token=\{session\.token\} onEnded=\{onSignOut\} \/>/)
-  assert.match(page, /Payments and students are read-only; you can create marketers below/)
+  assert.match(page, /Payments and students are read-only; you can create and switch off marketers below/)
 })

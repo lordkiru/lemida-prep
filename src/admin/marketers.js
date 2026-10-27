@@ -31,11 +31,29 @@ export const inviteMessage = (marketer, inviteSent) => (inviteSent ? `Invite sen
 // Where a marketer is in getting started, from what the server says
 export function marketerProgress(marketer) {
   if (!marketer) return ''
+  if (marketer.status === 'pending') return 'Signed up, has not confirmed their email'
   if (marketer.lastLoginAt) return `Signed in ${dateText(marketer.lastLoginAt)}`
   return marketer.passwordSet ? 'Password chosen, not signed in yet' : 'Has not chosen a password'
 }
 
-export const marketerStatusText = (marketer) => (marketer && marketer.status === 'suspended' ? 'Suspended' : 'Active')
+const STATUS_TEXT = { active: 'Active', suspended: 'Suspended', pending: 'Waiting to confirm email' }
+export const marketerStatusText = (marketer) => STATUS_TEXT[marketer && marketer.status] || 'Active'
+
+// The one switch an admin has on a marketer: an active marketer can be switched off, a suspended one back on. A marketer who has not confirmed their email has no
+// switch (they switch themselves on by confirming), and neither does anything unknown.
+export function statusSwitch(marketer) {
+  if (!marketer) return null
+  if (marketer.status === 'active') return { next: 'suspended', label: 'Suspend' }
+  if (marketer.status === 'suspended') return { next: 'active', label: 'Switch back on' }
+  return null
+}
+
+// The line shown after switching a marketer off or on
+export const switchMessage = (marketer, next) =>
+  next === 'suspended' ? `${marketer.name} is suspended: they cannot sign in, and their code earns nothing until you switch them back on.` : `${marketer.name} is switched back on.`
+
+// The button on a row that sends the email again: not for a suspended marketer, and worded for what the email is
+export const inviteButton = (marketer) => ({ disabled: !marketer || marketer.status === 'suspended', label: marketer && marketer.status === 'pending' ? 'Send link again' : 'Send invite again' })
 
 // What they have earned so far, as the list shows it
 export const earnedText = (marketer) => nairaText(marketer && marketer.totalEarned)

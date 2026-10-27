@@ -95,7 +95,7 @@ function Dashboard({ session, onSignOut }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="m-0 text-2xl font-extrabold">Exam Prep admin</h1>
-          <p className="m-0 text-sm text-muted">Signed in as {session.email || session.name}. Payments and students are read-only; you can create marketers below.</p>
+          <p className="m-0 text-sm text-muted">Signed in as {session.email || session.name}. Payments and students are read-only; you can create and switch off marketers below.</p>
         </div>
         <div className="flex gap-2">
           <button type="button" className="btn-secondary" onClick={reload} disabled={state.status === 'loading'}>

@@ -127,13 +127,16 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
   const admin = {
     login: ({ email, password }) => send('POST', '/auth/login', { email, password }),
     overview: (token) => request('/superadmin/prep-admin/overview', { headers: { Authorization: `Bearer ${token}` } }),
-    // Marketers: create one (the server emails them a link to choose a password), list them, send an invite again. Nothing else: no wallets, no money.
+    // Marketers: create one (the server emails them a link to choose a password), list them, send an invite again, switch one off or back on. Nothing else: no wallets, no money.
     marketers: {
       list: (token) => request('/superadmin/prep-marketers', { headers: { Authorization: `Bearer ${token}` } }),
       create: (token, { name, email, phone }) =>
         request('/superadmin/prep-marketers', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, phone }) }),
       sendInvite: (token, marketerId) =>
         request(`/superadmin/prep-marketers/${enc(marketerId)}/invite`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: '{}' }),
+      // status is 'active' or 'suspended' (the server refuses anything else, and a marketer who has not confirmed their email yet)
+      setStatus: (token, marketerId, status) =>
+        request(`/superadmin/prep-marketers/${enc(marketerId)}/status`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }),
     },
   }
 

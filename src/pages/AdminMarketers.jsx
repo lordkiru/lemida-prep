@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import { dateText } from '../admin/format'
-import { createdMessage, earnedText, inviteMessage, marketerFormProblems, marketerPayload, marketerProgress, marketerStatusText } from '../admin/marketers'
+import { createdMessage, earnedText, inviteButton, inviteMessage, marketerFormProblems, marketerPayload, marketerProgress, marketerStatusText, statusSwitch, switchMessage } from '../admin/marketers'
 import Field from '../components/Field'
 import Notice from '../components/Notice'
 
-// The admin page's Marketers section: create a marketer, see everyone, send an invite again. A new marketer is emailed a link to choose a password, and signs in
-// at /marketer. Creating and inviting are all it does: nothing here touches money, wallets or students.
+// The admin page's Marketers section: create a marketer, see everyone (including people who signed up for themselves), send an invite again, and switch a marketer
+// off or back on. A new marketer is emailed a link to choose a password, and signs in at /marketer. Nothing here touches money, wallets or students.
 const th = 'whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-muted'
 const td = 'px-3 py-2 align-top text-sm'
 
@@ -17,6 +17,7 @@ export default function AdminMarketers({ token, onEnded }) {
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState(null) // { kind: 'success' | 'error', text }
   const [sending, setSending] = useState('') // the marketer whose invite is being sent
+  const [switching, setSwitching] = useState('') // the marketer being switched off or on
   const [rowNotes, setRowNotes] = useState({}) // marketerId -> what happened to the last invite
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
 
@@ -70,13 +71,28 @@ export default function AdminMarketers({ token, onEnded }) {
     }
   }
 
+  async function switchStatus(marketer, next) {
+    setSwitching(marketer.id)
+    setRowNotes((n) => ({ ...n, [marketer.id]: '' }))
+    try {
+      await api.admin.marketers.setStatus(token, marketer.id, next)
+      await load()
+      setRowNotes((n) => ({ ...n, [marketer.id]: switchMessage(marketer, next) }))
+    } catch (err) {
+      if (err.status === 401) return onEnded()
+      setRowNotes((n) => ({ ...n, [marketer.id]: err.message }))
+    } finally {
+      setSwitching('')
+    }
+  }
+
   return (
     <section aria-labelledby="marketers-title" className="glass p-5">
       <h2 id="marketers-title" className="m-0 mb-1 text-lg font-extrabold">
         Marketers
       </h2>
       <p className="m-0 mb-4 text-xs text-muted">
-        A new marketer is emailed a link to choose a password, then signs in at <strong>/marketer</strong>. Their referral code is made for them.
+        A new marketer is emailed a link to choose a password, then signs in at <strong>/marketer</strong>. Their referral code is made for them. Marketers can also sign up for themselves at <strong>/marketer/signup</strong>; they show here as waiting until they confirm their email.
       </p>
 
       <form onSubmit={create} noValidate className="mb-5 grid gap-3 sm:grid-cols-3" aria-label="Create a marketer">
@@ -115,7 +131,7 @@ export default function AdminMarketers({ token, onEnded }) {
                 <th className={th}>Getting started</th>
                 <th className={th}>Earned</th>
                 <th className={th}>Added</th>
-                <th className={th}>Invite</th>
+                <th className={th}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -130,9 +146,16 @@ export default function AdminMarketers({ token, onEnded }) {
                   <td className={`${td} whitespace-nowrap`}>{earnedText(m)}</td>
                   <td className={`${td} whitespace-nowrap`}>{dateText(m.createdAt)}</td>
                   <td className={td}>
-                    <button type="button" className="btn-secondary" disabled={sending === m.id || m.status !== 'active'} onClick={() => sendAgain(m)}>
-                      {sending === m.id ? 'Sending...' : 'Send invite again'}
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" className="btn-secondary" disabled={sending === m.id || inviteButton(m).disabled} onClick={() => sendAgain(m)}>
+                        {sending === m.id ? 'Sending...' : inviteButton(m).label}
+                      </button>
+                      {statusSwitch(m) && (
+                        <button type="button" className="btn-secondary" disabled={switching === m.id} onClick={() => switchStatus(m, statusSwitch(m).next)}>
+                          {switching === m.id ? 'Saving...' : statusSwitch(m).label}
+                        </button>
+                      )}
+                    </div>
                     {rowNotes[m.id] && (
                       <p role="status" className="m-0 mt-1 text-xs text-muted">
                         {rowNotes[m.id]}
