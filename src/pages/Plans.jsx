@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth/authContext'
 import Notice from '../components/Notice'
-import { POLL_EVERY_MS, POLL_FOR_MS, clearPlanBefore, formatNaira, isPaid, loadPlanBefore, paymentConfirmed, freeIntro, planFeatures, planLine, rememberPlanBefore, returnedFromPaystack, termDeal } from '../billing'
+import { BACK_FROM_PAYSTACK_AFTER_MS, OPEN_PAYSTACK_FOR_MS, POLL_EVERY_MS, POLL_FOR_MS, clearPlanBefore, formatNaira, isPaid, loadPlanBefore, paymentConfirmed, freeIntro, planFeatures, planLine, rememberPlanBefore, returnedFromPaystack, termDeal } from '../billing'
 
 // The plans: Free, Monthly, and 3 months. Paying happens on Paystack's own page; the student comes back here, and this page waits for the server to
 // say the plan is active (it can take a few seconds) before it says so.
@@ -68,14 +68,33 @@ export default function Plans() {
     }
   }, [payment, check])
 
+  // A student who cancels on Paystack and presses Back gets this page back exactly as they left it, still on "Opening Paystack..." (the browser keeps the page
+  // in memory instead of loading it again). "pageshow" fires then, so give them the buttons back.
+  useEffect(() => {
+    const onShow = (event) => {
+      if (event.persisted) setBusy('')
+    }
+    window.addEventListener('pageshow', onShow)
+    return () => window.removeEventListener('pageshow', onShow)
+  }, [])
+
   async function subscribe(planId) {
     setBusy(planId)
     setError('')
+    let timer
     try {
-      const data = await api.billing.initialize(planId)
+      // if the server does not answer in time the student is told, instead of watching "Opening Paystack..." for ever
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('Paystack is taking too long to open. Please check your connection and try again.')), OPEN_PAYSTACK_FOR_MS)
+      })
+      const data = await Promise.race([api.billing.initialize(planId), timeout])
+      clearTimeout(timer)
       rememberPlanBefore(user)
       window.location.assign(data.authorizationUrl)
+      // still here a few seconds later (the student came back, or the browser did not leave): the buttons work again
+      setTimeout(() => setBusy(''), BACK_FROM_PAYSTACK_AFTER_MS)
     } catch (err) {
+      clearTimeout(timer)
       setError(err.message)
       setBusy('')
     }
