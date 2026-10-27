@@ -68,16 +68,10 @@ export function Privacy() {
 
       <H>Who helps us run the app</H>
       <p className="m-0">
-        We use trusted companies to run parts of the service. They handle your information only to do that job for us:
+        We use trusted companies to run parts of the service, such as hosting, storage and sending emails. They handle your information only to do that job for us.
+        Some of them handle information outside Nigeria. We choose providers that protect it, and we do not allow them to use it for their own purposes. If you would like to
+        know more, ask us at the address below.
       </p>
-      <Ul>
-        <li>Microsoft Azure runs our servers.</li>
-        <li>MongoDB Atlas stores our database.</li>
-        <li>Cloudflare delivers the website and protects it from attacks.</li>
-        <li>Brevo sends the emails (to confirm your email, and to reset your password).</li>
-        <li>Sentry tells us when something breaks, using technical error reports.</li>
-      </Ul>
-      <p className="m-0">Some of these companies handle information outside Nigeria. We choose providers that protect it, and we do not allow them to use it for their own purposes.</p>
 
       <H>Students under 18</H>
       <p className="m-0">
