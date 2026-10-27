@@ -102,6 +102,11 @@ export function paymentConfirmed(before, user) {
 export const POLL_EVERY_MS = 3000
 export const POLL_FOR_MS = 60000
 
+// How long "Opening Paystack..." may last before the page gives the button back: waiting for the server to answer, and (once we have sent the student to
+// Paystack) coming back to this page without it being reloaded, which phones do when the student cancels and presses Back.
+export const OPEN_PAYSTACK_FOR_MS = 20000
+export const BACK_FROM_PAYSTACK_AFTER_MS = 8000
+
 // ---- how many mock exams a student may still start ----
 // 'allowance' is what GET /api/prep/mocks returns. Two kinds:
 //   kind 'free': { limit, used, remaining, allowed, resetsAt }   the free tier's mocks in any week

@@ -178,3 +178,19 @@ test('with none left, the student is told they come back tomorrow, per subject, 
 test('a paid student has no practice limit to show', () => {
   assert.deepEqual(practiceGate({ kind: 'plan', unlimited: true, allowed: true, limit: null, used: null, remaining: null, resetsAt: null }), NO_PRACTICE_LIMIT)
 })
+
+// ---------- "Opening Paystack..." must never be stuck ----------
+
+test('the Subscribe button always comes back: after Back from Paystack, after a few seconds, and after a server that does not answer', async () => {
+  const { default: fs } = await import('node:fs')
+  const { default: path } = await import('node:path')
+  const { fileURLToPath } = await import('node:url')
+  const { OPEN_PAYSTACK_FOR_MS, BACK_FROM_PAYSTACK_AFTER_MS } = await import('./billing.js')
+  const page = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'pages', 'Plans.jsx'), 'utf8')
+  assert.match(page, /addEventListener\('pageshow'/, 'a page restored with the Back button is reset')
+  assert.match(page, /event\.persisted\) setBusy\(''\)/)
+  assert.match(page, /setTimeout\(\(\) => setBusy\(''\), BACK_FROM_PAYSTACK_AFTER_MS\)/)
+  assert.match(page, /Promise\.race\(\[api\.billing\.initialize\(planId\), timeout\]\)/)
+  assert.ok(OPEN_PAYSTACK_FOR_MS >= 10000 && OPEN_PAYSTACK_FOR_MS <= 30000, 'long enough for a slow phone, short enough to notice')
+  assert.ok(BACK_FROM_PAYSTACK_AFTER_MS >= 3000 && BACK_FROM_PAYSTACK_AFTER_MS < OPEN_PAYSTACK_FOR_MS)
+})
