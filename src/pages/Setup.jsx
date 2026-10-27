@@ -144,7 +144,7 @@ export default function Setup() {
         </fieldset>
 
         <fieldset id="group-examYear" className="m-0 min-w-0 border-0 p-0" aria-describedby={errors.examYear ? 'year-error' : undefined}>
-          <legend className="mb-2 text-base font-bold">3. Which year will you sit the exam?</legend>
+          <legend className="mb-2 text-base font-bold">3. Which year will you sit for the exam?</legend>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {examYears.map((y) => (
               <Choice key={y} name="examYear" value={y} checked={form.examYear === y} onChange={pick('examYear')} label={String(y)} />
