@@ -6,7 +6,7 @@ import Field, { PasswordField } from '../../components/Field'
 import Notice from '../../components/Notice'
 import { MarketerFrame } from './Marketer'
 
-// Choosing a password for the marketer page: the link in the invite email (first time) or in a reset email (forgotten). Both come here, and both work once.
+// Choosing a password for the marketer page: the link in the invite or sign-up confirmation email (first time) or in a reset email (forgotten). All come here, and all work once.
 export function MarketerSetPassword() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
@@ -68,7 +68,7 @@ export function MarketerSetPassword() {
           <h1 id="bad-title" className="mb-3 text-2xl font-extrabold">
             This link has expired
           </h1>
-          <p className="mb-5">Each link works only once and for a limited time. If this is your first time, ask Lemida to send your invite again. Otherwise, ask for a new link.</p>
+          <p className="mb-5">Each link works only once and for a limited time. If you signed up a while ago, sign up again to get a fresh link. If Lemida set you up, ask Lemida to send your invite again. Otherwise, ask for a new link.</p>
           <Link to="/marketer/forgot" className="btn-primary">
             Get a new link
           </Link>
