@@ -138,10 +138,12 @@ export function createApi({ baseUrl, fetchImpl } = {}) {
   }
 
   // The marketer's own page (/marketer). Marketers have their own accounts and their own cookie, apart from the students'. Read-only apart from signing in,
-  // out, and choosing a password.
+  // out, signing up, and choosing a password.
   const marketer = {
     login: ({ email, password }) => send('POST', '/api/prep/marketer/auth/login', { email, password }),
     logout: () => send('POST', '/api/prep/marketer/auth/logout', {}),
+    signUp: ({ name, email, phone }) => send('POST', '/api/prep/marketer/auth/signup', { name, email, phone }),
+    rules: () => request('/api/prep/marketer/rules'),
     forgotPassword: (email) => send('POST', '/api/prep/marketer/auth/forgot-password', { email }),
     setPassword: ({ token, password }) => send('POST', '/api/prep/marketer/auth/set-password', { token, password }),
     me: () => request('/api/prep/marketer/me'),
