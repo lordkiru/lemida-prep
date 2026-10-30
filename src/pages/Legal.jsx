@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 // They describe what the app really does today: if the app starts to collect or share something new (analytics, payments, advertising), update
 // this text first.
 const UPDATED = '23 October 2026'
-const CONTACT = 'festus.a@lemidaitsolutions.com'
+const CONTACT = 'support@lemidaitsolutions.com'
 
 function Page({ title, children }) {
   return (
